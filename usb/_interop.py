@@ -31,8 +31,9 @@
 # Please, note that there is one version check for each
 # hack we need to do, this makes maintenance easier... ^^
 
-import array
 import sys
+
+import array
 
 __all__ = ['_reduce', '_set', '_next', '_update_wrapper']
 

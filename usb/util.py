@@ -45,8 +45,9 @@ get_string - retrieve a string descriptor from the device.
 
 __author__ = 'Wander Lairson Costa'
 
-import array
 from sys import hexversion
+
+import array
 
 import usb._interop as _interop
 
