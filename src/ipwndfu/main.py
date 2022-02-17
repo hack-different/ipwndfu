@@ -47,6 +47,7 @@ Advanced options:
   --dev=<filter>\t\tTarget a specific device. e.g. `--dev=8015` or `--dev=<ecid>`
   --demote\t\t\tdemote device to enable JTAG
   --boot\t\t\tboot device
+  --repair-heap\t\t\trepair device heap
   --dump=address,length\t\tdump memory to stdout
   --hexdump=address,length\thexdump memory to stdout
   --dump-rom\t\t\tdump SecureROM
@@ -71,6 +72,7 @@ def main():
     parser.add_argument("-l", dest="list", action="store_true")
 
     parser.add_argument("--demote", dest="demote", action="store_true")
+    parser.add_argument("--repair-heap", dest="repair_heap", action="store_true")
     parser.add_argument("--boot", dest="boot", action="store_true")
     parser.add_argument("--dev", dest="match_device")
     parser.add_argument("--dump", dest="dump")
@@ -116,6 +118,9 @@ def main():
 
     elif args.demote:
         demote(device)
+
+    elif args.repair_heap:
+        repair_heap(device, match_device=args.match_device)
 
     elif args.boot:
         boot(device)
@@ -499,6 +504,36 @@ def list_devices():
     else:
         return 0
 
+def repair_heap(device=None, match_device=None):
+    if not device:
+        device = dfu.acquire_device(match=match_device)
+    serial = get_serial(device.serial_number)
+    if serial.pwned:
+        pwned = usbexec.PwnedUSBDevice()
+        heap_base = pwned.heap_base()
+        heap_offset = pwned.heap_offset()
+        heap_state = pwned.platform.heap_state
+        heap_write_hash = pwned.platform.heap_write_hash
+        heap_check_all = pwned.platform.heap_check_all
+        if heap_base == 0 or heap_offset == 0 or heap_state == 0 or heap_write_hash == 0 or heap_check_all == 0:
+            print("Device not supported for --repair-heap")
+            return
+        block1 = pack("<8Q", 0, 0, 0, heap_state, 2, 132, 128, 0)
+        block2 = pack("<8Q", 0, 0, 0, heap_state, 2, 8, 128, 0)
+        pwned.write_memory(heap_base + heap_offset, block1)
+        pwned.write_memory(heap_base + heap_offset + 0x80, block2)
+        pwned.write_memory(heap_base + heap_offset + 0x100, block2)
+        pwned.write_memory(heap_base + heap_offset + 0x180, block2)
+        pwned.execute(0, heap_write_hash, heap_base + heap_offset)
+        pwned.execute(0, heap_write_hash, heap_base + heap_offset + 0x80)
+        pwned.execute(0, heap_write_hash, heap_base + heap_offset + 0x100)
+        pwned.execute(0, heap_write_hash, heap_base + heap_offset + 0x180)
+        pwned.execute(0, heap_check_all)
+        dfu.request_image_validation(device)
+        dfu.release_device(device)
+        print("Heap repaired.")
+    else:
+        print("Device not in pwndfu mode!")
 
 def boot(device=None):
     if not device:

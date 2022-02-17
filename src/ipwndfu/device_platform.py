@@ -1,21 +1,24 @@
+from typing import Optional
+
+
 class DevicePlatform:
     def __init__(
         self,
-        cpid,
-        cprv,
-        scep,
-        arch,
-        srtg,
-        rom_base,
-        rom_size,
-        rom_sha1,
-        sram_base,
-        sram_size,
-        dram_base,
-        nonce_length,
-        sep_nonce_length,
-        demotion_reg,
-    ):
+        cpid: int,
+        cprv: int,
+        scep: int,
+        arch: str,
+        srtg: str,
+        rom_base: int,
+        rom_size: int,
+        rom_sha1: str,
+        sram_base: int,
+        sram_size: int,
+        dram_base: int,
+        nonce_length: int,
+        sep_nonce_length: Optional[int],
+        demotion_reg: int,
+    ) -> None:
         self.cpid = cpid
         self.cprv = cprv
         self.scep = scep
@@ -30,6 +33,11 @@ class DevicePlatform:
         self.nonce_length = nonce_length
         self.sep_nonce_length = sep_nonce_length
         self.demotion_reg = demotion_reg
+        self.sigcheck_addr = sigcheck_addr
+        self.sigcheck_patch = sigcheck_patch
+        self.heap_state = heap_state
+        self.heap_write_hash = heap_write_hash
+        self.heap_check_all = heap_check_all
         if self.cpid in [0x8940, 0x8947]:
             self.dfu_image_base = 0x34000000
             self.dfu_load_base = 0x9FF00000
@@ -60,6 +68,8 @@ class DevicePlatform:
             self.dfu_load_base = 0x800000000
             self.recovery_image_base = 0x18001C000
             self.recovery_load_base = 0x800000000
+            self.heap_base = 0x1801E8000
+            self.heap_offset = 0x5000
         if self.cpid in [0x8000, 0x8003, 0x7000]:
             self.dfu_image_base = 0x180380000
             self.dfu_load_base = 0x180000000  # varies (HACK: test purposes)
@@ -91,6 +101,11 @@ all_platforms = [
         nonce_length=20,
         sep_nonce_length=None,
         demotion_reg=0x3F500000,
+        sigcheck_addr=0x451E,
+        sigcheck_patch=0x0020,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
     DevicePlatform(
         cpid=0x8950,
@@ -107,6 +122,11 @@ all_platforms = [
         nonce_length=20,
         sep_nonce_length=None,
         demotion_reg=0x3F500000,
+        sigcheck_addr=0x4D28,
+        sigcheck_patch=0x0020,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
     DevicePlatform(
         cpid=0x8955,
@@ -123,6 +143,11 @@ all_platforms = [
         nonce_length=20,
         sep_nonce_length=None,
         demotion_reg=0x3F500000,
+        sigcheck_addr=0x4D28,
+        sigcheck_patch=0x0020,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
     DevicePlatform(
         cpid=0x8002,
@@ -139,6 +164,11 @@ all_platforms = [
         nonce_length=32,
         sep_nonce_length=20,
         demotion_reg=0x481BC000,
+        sigcheck_addr=0x4452,
+        sigcheck_patch=0x0020,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
     DevicePlatform(
         cpid=0x8004,
@@ -155,6 +185,11 @@ all_platforms = [
         nonce_length=32,
         sep_nonce_length=20,
         demotion_reg=0x481BC000,
+        sigcheck_addr=0x4452,
+        sigcheck_patch=0x0020,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
     DevicePlatform(
         cpid=0x8960,
@@ -171,6 +206,11 @@ all_platforms = [
         nonce_length=20,
         sep_nonce_length=20,
         demotion_reg=0x20E02A000,
+        sigcheck_addr=0x100005BE8,
+        sigcheck_patch=0x000080D2,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
     DevicePlatform(
         cpid=0x8010,
@@ -187,6 +227,11 @@ all_platforms = [
         nonce_length=32,
         sep_nonce_length=20,
         demotion_reg=0x2102BC000,
+        sigcheck_addr=0x1000074AC,
+        sigcheck_patch=0x000080D2,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
     DevicePlatform(
         cpid=0x8011,
@@ -203,6 +248,11 @@ all_platforms = [
         nonce_length=32,
         sep_nonce_length=20,
         demotion_reg=0x2102BC000,
+        sigcheck_addr=0x100007630,
+        sigcheck_patch=0x000080D2,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
     DevicePlatform(
         cpid=0x8012,
@@ -219,6 +269,11 @@ all_platforms = [
         nonce_length=32,
         sep_nonce_length=20,
         demotion_reg=0x2112BC000,
+        sigcheck_addr=0x100004854,
+        sigcheck_patch=0x000080D2,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
     DevicePlatform(
         cpid=0x8015,
@@ -235,6 +290,11 @@ all_platforms = [
         nonce_length=32,
         sep_nonce_length=20,
         demotion_reg=0x2352BC000,
+        sigcheck_addr=0x10000624C,
+        sigcheck_patch=0x000080D2,
+        heap_state=0x1800086A0,
+        heap_write_hash=0x10000D4EC,
+        heap_check_all=0x10000DB98,
     ),
     DevicePlatform(
         cpid=0x7000,
@@ -251,6 +311,11 @@ all_platforms = [
         nonce_length=20,
         sep_nonce_length=20,
         demotion_reg=0x20E02A000,
+        sigcheck_addr=0x100007E98,
+        sigcheck_patch=0x000080D2,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
     DevicePlatform(
         cpid=0x8000,
@@ -267,6 +332,11 @@ all_platforms = [
         nonce_length=32,
         sep_nonce_length=20,
         demotion_reg=0x2102BC000,
+        sigcheck_addr=0x10000812C,
+        sigcheck_patch=0x000080D2,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
     DevicePlatform(
         cpid=0x8003,
@@ -283,5 +353,10 @@ all_platforms = [
         nonce_length=32,
         sep_nonce_length=20,
         demotion_reg=0x2102BC000,
+        sigcheck_addr=0x10000812C,
+        sigcheck_patch=0x000080D2,
+        heap_state=0,
+        heap_write_hash=0,
+        heap_check_all=0,
     ),
 ]
