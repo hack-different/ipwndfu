@@ -1,21 +1,24 @@
+from typing import Optional
+
+
 class DevicePlatform:
     def __init__(
         self,
-        cpid,
-        cprv,
-        scep,
-        arch,
-        srtg,
-        rom_base,
-        rom_size,
-        rom_sha1,
-        sram_base,
-        sram_size,
-        dram_base,
-        nonce_length,
-        sep_nonce_length,
-        demotion_reg,
-    ):
+        cpid: int,
+        cprv: int,
+        scep: int,
+        arch: str,
+        srtg: str,
+        rom_base: int,
+        rom_size: int,
+        rom_sha1: str,
+        sram_base: int,
+        sram_size: int,
+        dram_base: int,
+        nonce_length: int,
+        sep_nonce_length: Optional[int],
+        demotion_reg: int,
+    ) -> None:
         self.cpid = cpid
         self.cprv = cprv
         self.scep = scep

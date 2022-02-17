@@ -1,12 +1,13 @@
 import platform
 import struct
 import sys
+from typing import Tuple
 
 from ipwndfu import device_platform, dfu
 
 
 class ExecConfig:
-    def __init__(self, info, aes_crypto_cmd):
+    def __init__(self, info: Tuple[str, str, str], aes_crypto_cmd: int) -> None:
         self.info = info
         self.aes_crypto_cmd = aes_crypto_cmd
 

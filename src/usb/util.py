@@ -47,8 +47,12 @@ __author__ = "Wander Lairson Costa"
 
 import array
 from sys import hexversion
+from typing import TYPE_CHECKING
 
 import usb._interop as _interop
+
+if TYPE_CHECKING:
+    from usb.core import Device
 
 GET_DESC_SIZE = 0x02
 
@@ -131,7 +135,7 @@ def endpoint_type(bmAttributes):
     return bmAttributes & _ENDPOINT_TRANSFER_TYPE_MASK
 
 
-def ctrl_direction(bmRequestType):
+def ctrl_direction(bmRequestType: int) -> int:
     r"""Return the direction of a control request.
 
     The bmRequestType parameter is the value of the
@@ -141,7 +145,7 @@ def ctrl_direction(bmRequestType):
     return bmRequestType & _CTRL_DIR_MASK
 
 
-def build_request_type(direction, type, recipient):
+def build_request_type(direction: int, type: int, recipient: int) -> int:
     r"""Build a bmRequestType field for control requests.
 
     These is a conventional function to build a bmRequestType
@@ -229,7 +233,7 @@ def release_interface(device, interface):
     device._ctx.managed_release_interface(device, interface)
 
 
-def dispose_resources(device):
+def dispose_resources(device: "Device") -> None:
     r"""Release internal resources allocated by the object.
 
     Sometimes you need to provide deterministic resources
@@ -246,7 +250,7 @@ def dispose_resources(device):
     device._ctx.dispose(device)
 
 
-def get_langids(dev):
+def get_langids(dev: "Device") -> list[int]:
     r"""Retrieve the list of supported Language IDs from the device.
 
     Most client code should not call this function directly, but instead use
@@ -288,14 +292,14 @@ def get_langids(dev):
     # If the length of buf came back odd, something is wrong.
 
     if len(buf) < 4 or buf[0] < 4 or buf[0] & 1 != 0:
-        return ()
+        return []
 
-    return tuple(
+    return list(
         map(lambda x, y: x + (y << 8), buf[2 : buf[0] : 2], buf[3 : buf[0] : 2])
     )
 
 
-def get_string(dev, index, langid=None):
+def get_string(dev: "Device", index: int, langid: None = None) -> str:
     r"""Retrieve a string descriptor from the device.
 
     dev is the Device object which the string will be read from.
@@ -318,7 +322,7 @@ def get_string(dev, index, langid=None):
     not support.
     """
     if 0 == index:
-        return None
+        raise IndexError("Index 0 is used to query langids")
 
     from usb.control import get_descriptor
 

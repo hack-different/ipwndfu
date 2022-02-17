@@ -6,6 +6,7 @@ HOST2DEVICE = 0x21
 DFU_ABORT = 4
 
 device = dfu.acquire_device()
+assert device
 d = usbexec.PwnedUSBDevice()
 
 BASE = 0x17A000000 - 0x100000000
