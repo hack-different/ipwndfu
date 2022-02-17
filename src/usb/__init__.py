@@ -42,7 +42,9 @@ module. New applications are encouraged to use it.
 
 import logging
 import os
+from contextlib import suppress
 from itertools import groupby
+from typing import Optional
 
 import usb._objfinalizer as _objfinalizer
 import usb.control as control
@@ -59,7 +61,7 @@ __version__ = "%d.%d.%d" % version_info
 __all__ = ["control", "core", "backend", "util", "libloader"]
 
 
-def _setup_log():
+def _setup_log() -> None:
     logger = logging.getLogger("usb")
     debug_level = os.getenv("PYUSB_DEBUG")
 
@@ -78,10 +80,15 @@ def _setup_log():
         level = LEVELS.get(debug_level, logging.CRITICAL + 10)
         logger.setLevel(level=level)
 
-        try:
-            handler = logging.FileHandler(filename)
-        except IOError:
+        handler: Optional[logging.StreamHandler] = None
+        with suppress():
+            if filename:
+                handler = logging.FileHandler(filename)
+
+        if not handler:
             handler = logging.StreamHandler()
+
+        assert handler
 
         fmt = logging.Formatter("%(asctime)s %(levelname)s:%(name)s:%(message)s")
         handler.setFormatter(fmt)
