@@ -18,6 +18,11 @@ class DevicePlatform:
         nonce_length: int,
         sep_nonce_length: Optional[int],
         demotion_reg: int,
+        sigcheck_addr: int,
+        sigcheck_patch: int,
+        heap_state: int,
+        heap_write_hash: int,
+        heap_check_all: int,
     ) -> None:
         self.cpid = cpid
         self.cprv = cprv
