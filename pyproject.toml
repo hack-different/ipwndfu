@@ -9,12 +9,14 @@ authors = ["axi0mX <axi0mXor@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 pyusb = "^1.2.1"
+cryptography = "^36.0.1"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.12.2"
 pytest = "^7.0.1"
 mypy = "^0.931"
 pre-commit = "^2.17.0"
+coverage = "^6.3.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -1,41 +1,31 @@
 import subprocess
 import sys
+import typing
+from collections import namedtuple
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
-def apply_patches(binary, patches):
+Patch = namedtuple("Patch", "offset data")
+
+
+def apply_patches(binary: bytes, patches: typing.List[Patch]):
     for (offset, data) in patches:
         binary = binary[:offset] + data + binary[offset + len(data):]
     return binary
 
 
-def aes_decrypt(data, iv, key):
+def aes_decrypt(data: bytes, iv: bytes, key: bytes) -> bytes:
     if len(key) == 32:
         aes = 128
     elif len(key) == 64:
         aes = 256
     else:
-        print('ERROR: Bad AES key given to aes_decrypt. Exiting.')
-        sys.exit(1)
+        raise AssertionError('ERROR: Bad AES key given to aes_decrypt. Exiting.')
 
-    p = subprocess.Popen(['openssl',
-                          'enc',
-                          '-aes-%s-cbc' % aes,
-                          '-d',
-                          '-nopad',
-                          '-iv',
-                          iv,
-                          '-K',
-                          key],
-                         stdout=subprocess.PIPE,
-                         stdin=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    (stdout, stderr) = p.communicate(input=data)
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+    decrypter = cipher.decryptor()
+    return decrypter.update(data) + decrypter.finalize()
 
-    if p.returncode != 0 or len(stderr) > 0:
-        print('ERROR: openssl failed: %s' % stderr)
-        sys.exit(1)
-
-    return stdout
 
 
 def hex_dump(data, address):

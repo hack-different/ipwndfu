@@ -1,11 +1,17 @@
 import struct
 import binascii
+import typing
 
-NOR_SIZE = 0x100000
+NOR_SIZE: int = 0x100000
 
 
 class NorData:
-    def __init__(self, dump):
+    firmware_offset: int
+    firmware_length: int
+    parts: typing.List[bytes]
+    images: typing.List[bytes]
+
+    def __init__(self, dump: bytes):
         assert len(dump) == NOR_SIZE
 
         (img2_magic, self.block_size, unused, firmware_block,
@@ -33,10 +39,10 @@ class NorData:
             self.images.append(self.parts[3][offset:offset + size])
             offset += size
 
-    def dump(self):
+    def dump(self) -> bytes:
         # Replace self.parts[3] with content of self.images
-        all_images = ''.join(self.images)
-        all_images += '\xff' * (self.firmware_length - len(all_images))
+        all_images = b''.join(self.images)
+        all_images += b'\xff' * (self.firmware_length - len(all_images))
         dump = self.parts[0] + self.parts[1] + \
             self.parts[2] + all_images + self.parts[4]
         assert len(dump) == NOR_SIZE
