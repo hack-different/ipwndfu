@@ -9,6 +9,7 @@ import typing
 from collections import namedtuple
 
 
+
 @dataclasses.dataclass
 class VersionConfig:
     version: str
@@ -66,6 +67,7 @@ configs = [
         dylib_patches=[],
         dylib_sha256='0490800ca9ff82d37c310a09f9bd29aaa87143cf86b35d94b170617ec9d127bb'),
 ]
+
 
 MODULE_DIR = os.path.dirname(__file__)
 BOTTLE_PATH_FORMAT = os.path.join(MODULE_DIR, 'bottles', '%s.tar.gz')
