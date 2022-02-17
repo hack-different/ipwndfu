@@ -70,7 +70,7 @@ def _try_get_string(
     default_str_i0="",
     default_access_error="Error Accessing String",
 ):
-    """try to get a string, but return a string no matter what"""
+    """Try to get a string, but return a string no matter what."""
     if index == 0:
         string = default_str_i0
     else:
@@ -85,7 +85,7 @@ def _try_get_string(
 
 
 def _try_lookup(table, value, default=""):
-    """try to get a string from the lookup table, return "" instead of key
+    """Try to get a string from the lookup table, return "" instead of key
     error
     """
     try:
@@ -96,8 +96,9 @@ def _try_lookup(table, value, default=""):
 
 
 class _DescriptorInfo(str):
-    """this class is used so that when a descriptor is shown on the
-    terminal it is propely formatted"""
+    """This class is used so that when a descriptor is shown on the
+    terminal it is propely formatted
+    """
 
     def __repr__(self):
         return self
@@ -300,7 +301,6 @@ class USBError(IOError):
 
 class NoBackendError(ValueError):
     r"Exception class when a valid backend is not found."
-    pass
 
 
 class Endpoint(object):
@@ -1300,15 +1300,13 @@ def find(find_all=False, backend=None, custom_match=None, **args):
         for dev in backend.enumerate_devices():
             d = Device(dev, backend)
             tests = (val == getattr(d, key) for key, val in list(kwargs.items()))
-            if _interop._all(tests) and (custom_match is None or custom_match(d)):
+            if all(tests) and (custom_match is None or custom_match(d)):
                 yield d
 
     if backend is None:
-        import usb.backend.libusb0 as libusb0
         import usb.backend.libusb1 as libusb1
-        import usb.backend.openusb as openusb
 
-        for m in (libusb1, openusb, libusb0):
+        for m in [libusb1]:
             backend = m.get_backend()
             if backend is not None:
                 _logger.info('find(): using backend "%s"', m.__name__)
@@ -1320,7 +1318,7 @@ def find(find_all=False, backend=None, custom_match=None, **args):
         return device_iter(**args)
     else:
         try:
-            return _interop._next(device_iter(**args))
+            return next(device_iter(**args))
         except StopIteration:
             return None
 
