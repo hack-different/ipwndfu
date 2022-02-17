@@ -43,11 +43,10 @@ get_langids - retrieve the list of supported string languages from the device.
 get_string - retrieve a string descriptor from the device.
 """
 
-__author__ = 'Wander Lairson Costa'
-
-from sys import hexversion
+__author__ = "Wander Lairson Costa"
 
 import array
+from sys import hexversion
 
 import usb._interop as _interop
 
@@ -71,10 +70,10 @@ ENDPOINT_TYPE_BULK = 0x02
 ENDPOINT_TYPE_INTR = 0x03
 
 # control request type
-CTRL_TYPE_STANDARD = (0 << 5)
-CTRL_TYPE_CLASS = (1 << 5)
-CTRL_TYPE_VENDOR = (2 << 5)
-CTRL_TYPE_RESERVED = (3 << 5)
+CTRL_TYPE_STANDARD = 0 << 5
+CTRL_TYPE_CLASS = 1 << 5
+CTRL_TYPE_VENDOR = 2 << 5
+CTRL_TYPE_RESERVED = 3 << 5
 
 # control request recipient
 CTRL_RECIPIENT_DEVICE = 0
@@ -86,13 +85,13 @@ CTRL_RECIPIENT_OTHER = 3
 CTRL_OUT = 0x00
 CTRL_IN = 0x80
 
-_ENDPOINT_ADDR_MASK = 0x0f
+_ENDPOINT_ADDR_MASK = 0x0F
 _ENDPOINT_DIR_MASK = 0x80
 _ENDPOINT_TRANSFER_TYPE_MASK = 0x03
 _CTRL_DIR_MASK = 0x80
 
 # For compatibility between Python 2 and 3
-_dummy_s = '\x00'.encode('utf-8')
+_dummy_s = "\x00".encode("utf-8")
 
 # speed type
 SPEED_LOW = 1
@@ -159,7 +158,7 @@ def build_request_type(direction, type, recipient):
     return recipient | type | direction
 
 
-def create_buffer(length):
+def create_buffer(length: int) -> array.array:
     r"""Create a buffer to be passed to a read function.
 
     A read function may receive an out buffer so the data
@@ -168,7 +167,7 @@ def create_buffer(length):
     call. This function creates a compatible sequence buffer
     of the given length.
     """
-    return array.array('B', _dummy_s * length)
+    return array.array("B", _dummy_s * length)
 
 
 def find_descriptor(desc, find_all=False, custom_match=None, **args):
@@ -276,12 +275,8 @@ def get_langids(dev):
     of directly calling this function.
     """
     from usb.control import get_descriptor
-    buf = get_descriptor(
-        dev,
-        254,
-        DESC_TYPE_STRING,
-        0
-    )
+
+    buf = get_descriptor(dev, 254, DESC_TYPE_STRING, 0)
 
     # The array is retrieved by asking for string descriptor zero, which is
     # never the index of a real string. The returned descriptor has bLength
@@ -295,7 +290,9 @@ def get_langids(dev):
     if len(buf) < 4 or buf[0] < 4 or buf[0] & 1 != 0:
         return ()
 
-    return tuple(map(lambda x, y: x + (y << 8), buf[2:buf[0]:2], buf[3:buf[0]:2]))
+    return tuple(
+        map(lambda x, y: x + (y << 8), buf[2 : buf[0] : 2], buf[3 : buf[0] : 2])
+    )
 
 
 def get_string(dev, index, langid=None):
@@ -324,6 +321,7 @@ def get_string(dev, index, langid=None):
         return None
 
     from usb.control import get_descriptor
+
     langids = dev.langids
 
     if 0 == len(langids):
@@ -334,22 +332,14 @@ def get_string(dev, index, langid=None):
         raise ValueError("The device does not support the specified langid")
 
     lenbuf = get_descriptor(
-        dev,
-        GET_DESC_SIZE,  # Maximum descriptor size
-        DESC_TYPE_STRING,
-        index,
-        langid
+        dev, GET_DESC_SIZE, DESC_TYPE_STRING, index, langid  # Maximum descriptor size
     )
 
     buf = get_descriptor(
-        dev,
-        lenbuf[0],  # Maximum descriptor size
-        DESC_TYPE_STRING,
-        index,
-        langid
+        dev, lenbuf[0], DESC_TYPE_STRING, index, langid  # Maximum descriptor size
     )
 
     if hexversion >= 0x03020000:
-        return buf[2:buf[0]].tobytes().decode('utf-16-le')
+        return buf[2 : buf[0]].tobytes().decode("utf-16-le")
     else:
-        return buf[2:buf[0]].tostring().decode('utf-16-le')
+        return buf[2 : buf[0]].tostring().decode("utf-16-le")

@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 # ipwndfu: open-source jailbreaking tool for older iOS devices
 # Original Author: axi0mX
+"""Main entry point to the ipwndfu utility for command line."""
+
 import argparse
 import hashlib
+import sys
 import time
 from collections import namedtuple
 from struct import pack
@@ -94,7 +97,7 @@ def main():
 
     if args.list:
         r = list_devices()
-        exit(r)
+        sys.exit(r)
 
     device = None
 
@@ -103,7 +106,7 @@ def main():
 
     if args.reset:
         dump(device, "0xDEADBEEF,0xFFFFFFF", match=args.match_device)
-        exit()
+        sys.exit()
 
     elif args.pwn:
         pwn(device, match_device=args.match_device)
@@ -191,7 +194,7 @@ def pwn(device=None, match_device=None):
     else:
         print("Found: " + serial_number, file=stderr)
         print("ERROR: This device is not supported.", file=stderr)
-        exit(1)
+        sys.exit(1)
 
     if serial.cpid in ["8012"]:
         t8012_heap_fix.fix_heap()
@@ -204,7 +207,7 @@ def xploit():
             "This is not a compatible device. alloc8 exploit is for iPhone 3GS only.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
 
     if device.config.version == "359.3":
         print(
@@ -227,13 +230,13 @@ def xploit():
                 "exploit was likely previously installed. Exiting.",
                 file=stderr,
             )
-            exit(1)
+            sys.exit(1)
     if len(nor_data.images) == 0 or len(nor_data.images[0]) < 0x24000:
         print(
             "ERROR: 24Kpwn LLB was not found. You must restore a custom 24Kpwn IPSW before using this exploit.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
 
     print("Preparing modified NOR with alloc8 exploit.")
     # Remove 24Kpwn first.
@@ -248,7 +251,7 @@ def send_file(device=None, filename=""):
             data = f.read()
     except IOError:
         print("ERROR: Could not read file: " + filename, file=stderr)
-        exit(1)
+        sys.exit(1)
 
     if not device:
         device = dfu.acquire_device(match=TARGET_SOC)
@@ -288,7 +291,7 @@ def demote(device=None):
             "ERROR: Demotion is only supported on devices pwned with checkm8 exploit.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
 
 
 def dump(device=None, dump_args="", match=None):
@@ -301,7 +304,7 @@ def dump(device=None, dump_args="", match=None):
             "ERROR: You must provide exactly 2 comma separated values: address,length",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
 
     raw_address, raw_length = arg.split(",")
     address = (
@@ -329,7 +332,7 @@ def hexdump(device=None, arg=""):
             "ERROR: You must provide exactly 2 comma separated values: address,length",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
 
     raw_address, raw_length = arg.split(",")
     address = (
@@ -368,7 +371,7 @@ def dump_rom(device=None):
                 "ERROR: SecureROM was dumped, but the SHA1 hash does not match. Exiting.",
                 file=stderr,
             )
-            exit(1)
+            sys.exit(1)
         chip = securerom[0x200:0x240].split(" ")[2][:-1]
         kind = securerom[0x240:0x280].split("\0")[0]
         version = securerom[0x280:0x2C0].split("\0")[0][6:]
@@ -387,6 +390,8 @@ def dump_rom(device=None):
 
 
 def decrypt_gid(device, arg, match=None):
+    """Decrypt a given byte string using the devices GID (CHIP group key)."""
+
     if not device:
         device = dfu.acquire_device()
 
@@ -408,6 +413,8 @@ def decrypt_gid(device, arg, match=None):
 
 
 def encrypt_gid(device, arg):
+    """Encrypt a bytestring with the GID (CHIP group key)."""
+
     if not device:
         device = dfu.acquire_device()
 
@@ -429,6 +436,8 @@ def encrypt_gid(device, arg):
 
 
 def decrypt_uid(device, arg):
+    """Decrypt a byte string with the device specific (user key)."""
+
     if not device:
         device = dfu.acquire_device()
 
@@ -450,6 +459,8 @@ def decrypt_uid(device, arg):
 
 
 def encrypt_uid(device, arg):
+    """Encrypt a byte string with a device specific (user key)."""
+
     if not device:
         device = dfu.acquire_device()
 
@@ -560,7 +571,7 @@ def dump_nor(arg):
             "This is not a compatible device. Dumping NOR is only supported on iPhone 3GS.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
     nor_data = device.nor_dump(save_backup=False)
     with open(arg, "wb") as f:
         f.write(nor_data)
@@ -579,7 +590,7 @@ def flash_nor(arg):
             "ERROR: Bad IMG2 header magic. This is not a valid NOR. Exiting.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
 
     device = PwnedDFUDevice()
     if device.config.cpid != "8920":
@@ -587,12 +598,14 @@ def flash_nor(arg):
             "This is not a compatible device. Flashing NOR is only supported on iPhone 3GS.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
     device.nor_dump(save_backup=True)
     device.flash_nor(new_nor)
 
 
 def do_24kpwn(device=None):
+    """Use the 24kpwn technique against the selected device."""
+
     print(
         "*** based on 24Kpwn exploit (segment overflow) by chronic, CPICH, ius, MuscleNerd, "
         "Planetbeing, pod2g, posixninja, et al. ***"
@@ -603,7 +616,7 @@ def do_24kpwn(device=None):
 
     if device.config.version != "359.3":
         print("Only iPhone 3GS (old bootrom) is supported.", file=stderr)
-        exit(1)
+        sys.exit(1)
 
     dump_data = device.nor_dump(save_backup=True)
 
@@ -616,14 +629,14 @@ def do_24kpwn(device=None):
                 "alloc8 exploit was likely previously installed. Exiting.",
                 file=stderr,
             )
-            exit(1)
+            sys.exit(1)
 
     if len(nor_data.images) == 0:
         print(
             "ERROR: 24Kpwn exploit cannot be installed, because NOR has no valid LLB. Exiting.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
 
     # Remove existing 24Kpwn exploit.
     if len(nor_data.images[0]) > 0x24000:
@@ -635,6 +648,8 @@ def do_24kpwn(device=None):
 
 
 def remove_24kpwn(device=None):
+    """Remove a 24kpwn exploit from a device."""
+
     if not device:
         device = PwnedDFUDevice()
     if device.config.cpid != "8920":
@@ -642,7 +657,7 @@ def remove_24kpwn(device=None):
             "This is not a compatible device. 24Kpwn exploit is only supported on iPhone 3GS.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
 
     print(
         "WARNING: This feature is for researchers only. Device will probably not boot into "
@@ -659,13 +674,13 @@ def remove_24kpwn(device=None):
             "ERROR: NOR has no valid LLB. It seems that 24Kpwn exploit is not installed. Exiting.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
     if len(nor_data.images[0]) <= 0x24000:
         print(
             "ERROR: LLB is not oversized. It seems that 24Kpwn exploit is not installed. Exiting.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
 
     print("Preparing modified NOR without 24Kpwn exploit.")
     nor_data.images[0] = image3_24Kpwn.remove_exploit(nor_data.images[0])
@@ -673,6 +688,8 @@ def remove_24kpwn(device=None):
 
 
 def remove_alloc8(device=None):
+    """Remove alloc8 exploit from a device."""
+
     if device is None:
         device = PwnedDFUDevice()
 
@@ -681,7 +698,7 @@ def remove_alloc8(device=None):
             "This is not a compatible device. alloc8 exploit is for iPhone 3GS only.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
 
     print(
         "WARNING: This feature is for researchers only. Device will probably not "
@@ -699,7 +716,7 @@ def remove_alloc8(device=None):
             "ERROR: It seems that alloc8 exploit is not installed. There are less than 700 images in NOR. Exiting.",
             file=stderr,
         )
-        exit(1)
+        sys.exit(1)
 
     print("Preparing modified NOR without alloc8 exploit.")
     new_nor = alloc8.remove_exploit(nor_data)
@@ -715,6 +732,8 @@ SerialNumber = namedtuple(
 
 
 def get_serial(_serial) -> SerialNumber:
+    """Parse a serial number (from the USB device) into its key-value pairings."""
+
     tokens = _serial.split(" ")
     cpid = ""
     cprv = ""
