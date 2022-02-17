@@ -276,9 +276,9 @@ all_platforms = [
         demotion_reg=0x2112BC000,
         sigcheck_addr=0x100004854,
         sigcheck_patch=0x000080D2,
-        heap_state=0,
-        heap_write_hash=0,
-        heap_check_all=0,
+        heap_state=0x180008B60,
+        heap_write_hash=0x10000D4E8,
+        heap_check_all=0x10000DB88,
     ),
     DevicePlatform(
         cpid=0x8015,
