@@ -1,5 +1,4 @@
-import ipwndfu.dfu as dfu 
-import ipwndfu.usbexec as usbexec
+from ipwndfu import dfu, usbexec
 
 HOST2DEVICE = 0x21
 DFU_ABORT = 4
@@ -7,7 +6,7 @@ DFU_ABORT = 4
 device = dfu.acquire_device()
 d = usbexec.PwnedUSBDevice()
 
-base = 0x17a000000 - 0x100000000
+base = 0x17A000000 - 0x100000000
 
 d.write_memory(0x1000019E4 + base, "\x1f\x20\x03\xd5\x19\x00\x80\xd2")
 

@@ -31,7 +31,6 @@ repos:
     hooks:
       - id: yesqa
         additional_dependencies: &flake8_deps
-          - flake8-annotations==2.7.0
           - flake8-broken-line==0.4.0
           - flake8-bugbear==21.9.2
           - flake8-comprehensions==3.7.0
@@ -65,6 +64,7 @@ repos:
     rev: 4.0.1
     hooks:
       - id: flake8
+        exclude: ^src/(usb|libusbfinder)/
         additional_dependencies: *flake8_deps
 
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -72,8 +72,10 @@ repos:
     hooks:
       - id: mypy
         pass_filenames: false
+        args: ['src/']
         additional_dependencies:
           - types-requests
+          - types-cryptography
 
   - repo: https://github.com/pre-commit/pre-commit
     rev: v2.17.0
