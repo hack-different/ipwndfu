@@ -3,6 +3,7 @@ import dataclasses
 import struct
 import sys
 import time
+import typing
 
 from ipwndfu import dfu
 
@@ -68,7 +69,7 @@ constants_240_5_1 = [
 @dataclasses.dataclass
 class DeviceConfig:
     version: str
-    constants: list[int]
+    constants: typing.List[int]
 
 
 configs = [
