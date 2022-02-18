@@ -204,6 +204,15 @@ class PwnedUSBDevice:
     def heap_offset(self):
         return self.platform.heap_offset
 
+    def trampoline_base(self):
+        return self.platform.trampoline_base
+
+    def trampoline_offset(self):
+        return self.platform.trampoline_offset
+
+    def page_offset(self):
+        return self.platform.page_offset
+
     def usb_serial_number(self, key):
         for pair in self.serial_number.split(" "):
             if pair.startswith(key + ":"):
