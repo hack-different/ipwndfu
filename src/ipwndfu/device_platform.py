@@ -110,7 +110,7 @@ class DevicePlatform:
             self.recovery_load_base = 0x800000000
             self.heap_base = 0
             self.heap_offset = 0
-            self.trampoline_base = 0
+            self.trampoline_base = 0x00000001800c0000
             self.trampoline_offset = 0
             self.page_offset = 0
 
