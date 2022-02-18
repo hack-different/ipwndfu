@@ -46,7 +46,6 @@ get_string - retrieve a string descriptor from the device.
 __author__ = "Wander Lairson Costa"
 
 import array
-import typing
 from sys import hexversion
 from typing import TYPE_CHECKING
 
@@ -251,7 +250,7 @@ def dispose_resources(device: "Device") -> None:
     device._ctx.dispose(device)
 
 
-def get_langids(dev: "Device") -> typing.List[int]:
+def get_langids(dev: "Device") -> list[int]:
     r"""Retrieve the list of supported Language IDs from the device.
 
     Most client code should not call this function directly, but instead use

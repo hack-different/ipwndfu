@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import binascii
 import dataclasses
 import struct
-import typing
 
 from ipwndfu.dfuexec import PwnedDFUDevice
 from ipwndfu.utilities import aes_decrypt
@@ -21,7 +22,7 @@ class Image3:
     data_size: int
     signed_size: int
     type: bytes
-    tags: typing.List[Image3Tag]
+    tags: list[Image3Tag]
 
     def __init__(self, data):
         (
@@ -73,7 +74,7 @@ class Image3:
             )
         return data_bytes + b"\x00" * (total_size - len(data_bytes))
 
-    def get_tags(self, magic) -> typing.List[Image3Tag]:
+    def get_tags(self, magic) -> list[Image3Tag]:
         matches = []
         for tag in self.tags:
             if tag.tag_magic == magic:

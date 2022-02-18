@@ -6,7 +6,6 @@ import dataclasses
 import struct
 import sys
 import time
-import typing
 
 import usb  # pyusb: use 'pip install pyusb' to install this module
 from ipwndfu import dfu
@@ -122,7 +121,7 @@ class DeviceConfig:
     cpid: str
     exploit_lr: int
     max_size: int
-    constants: typing.List[int]
+    constants: list[int]
 
 
 configs = [
