@@ -21,6 +21,7 @@ ipwndfu = "ipwndfu.main:main"
 python = "^3.8"
 cryptography = "^36.0.1"
 pyusb = "^1.2.1"
+ruyaml = "^0.91.0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.12.2"
