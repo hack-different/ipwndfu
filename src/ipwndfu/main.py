@@ -159,16 +159,16 @@ def main():
         remove_alloc8()
 
     elif args.decrypt_gid:
-        decrypt_gid(device, args.decrypt_gid, match=args.match_device)
+        print(decrypt_gid(device, args.decrypt_gid, match=args.match_device))
 
     elif args.encrypt_gid:
-        encrypt_gid(device, args.encrypt_gid)
+        print(encrypt_gid(device, args.encrypt_gid))
 
     elif args.decrypt_uid:
-        decrypt_uid(device, args.decrypt_uid)
+        print(decrypt_uid(device, args.decrypt_uid))
 
     elif args.encrypt_uid:
-        encrypt_uid(device, args.encrypt_uid)
+        print(encrypt_uid(device, args.encrypt_uid))
 
     else:
         print_help()
@@ -412,15 +412,16 @@ def decrypt_gid(device, arg, match=None):
     if "PWND:[checkm8]" in serial_number:
         pwned = usbexec.PwnedUSBDevice(match=match)
         print(f"Decrypting with {pwned.platform.name()} GID key.")
-        print(
-            pwned.aes(
-                bytes.fromhex(arg), usbexec.AES_DECRYPT, usbexec.AES_GID_KEY
-            ).hex()
-        )
+        aes = pwned.aes(
+            arg.decode("hex"), usbexec.AES_DECRYPT, usbexec.AES_GID_KEY
+        ).encode("hex")
     else:
         device = PwnedDFUDevice()
         print(f"Decrypting with S5L{device.config.cpid} GID key.")
-        print(device.aes_hex(arg, AES_DECRYPT, AES_GID_KEY))
+        aes = device.aes_hex(arg, AES_DECRYPT, AES_GID_KEY)
+
+    print(aes)
+    return aes
 
 
 def encrypt_gid(device, arg):
@@ -435,15 +436,16 @@ def encrypt_gid(device, arg):
     if "PWND:[checkm8]" in serial_number:
         pwned = usbexec.PwnedUSBDevice()
         print(f"Encrypting with {pwned.platform.name()} GID key.")
-        print(
-            pwned.aes(
-                bytes.fromhex(arg), usbexec.AES_ENCRYPT, usbexec.AES_GID_KEY
-            ).hex()
-        )
+        aes = pwned.aes(
+            arg.decode("hex"), usbexec.AES_ENCRYPT, usbexec.AES_GID_KEY
+        ).encode("hex")
     else:
         device = PwnedDFUDevice()
         print(f"Encrypting with S5L{device.config.cpid} GID key.")
-        print(device.aes_hex(arg, AES_ENCRYPT, AES_GID_KEY))
+        aes = device.aes_hex(arg, AES_ENCRYPT, AES_GID_KEY)
+
+    print(aes)
+    return aes
 
 
 def decrypt_uid(device, arg):
@@ -458,15 +460,16 @@ def decrypt_uid(device, arg):
     if "PWND:[checkm8]" in serial_number:
         pwned = usbexec.PwnedUSBDevice()
         print(f"Decrypting with {pwned.platform.name()} device-specific UID key.")
-        print(
-            pwned.aes(
-                bytes.fromhex(arg), usbexec.AES_DECRYPT, usbexec.AES_UID_KEY
-            ).hex()
-        )
+        aes = pwned.aes(
+            arg.decode("hex"), usbexec.AES_DECRYPT, usbexec.AES_UID_KEY
+        ).encode("hex")
     else:
         device = PwnedDFUDevice()
         print("Decrypting with device-specific UID key.")
-        print(device.aes_hex(arg, AES_DECRYPT, AES_UID_KEY))
+        aes = device.aes_hex(arg, AES_DECRYPT, AES_UID_KEY)
+
+    print(aes)
+    return aes
 
 
 def encrypt_uid(device, arg):
@@ -481,15 +484,16 @@ def encrypt_uid(device, arg):
     if "PWND:[checkm8]" in serial_number:
         pwned = usbexec.PwnedUSBDevice()
         print(f"Encrypting with {pwned.platform.name()} device-specific UID key.")
-        print(
-            pwned.aes(
-                bytes.fromhex(arg), usbexec.AES_ENCRYPT, usbexec.AES_UID_KEY
-            ).hex()
-        )
+        aes = pwned.aes(
+            arg.decode("hex"), usbexec.AES_ENCRYPT, usbexec.AES_UID_KEY
+        ).encode("hex")
     else:
         device = PwnedDFUDevice()
         print("Encrypting with device-specific UID key.")
-        print(device.aes_hex(arg, AES_ENCRYPT, AES_UID_KEY))
+        aes = device.aes_hex(arg, AES_ENCRYPT, AES_UID_KEY)
+
+    print(aes)
+    return aes
 
 
 def list_devices():
@@ -533,7 +537,16 @@ def repair_heap(device=None, match_device=None):
         heap_state = pwned.platform.heap_state
         heap_write_hash = pwned.platform.heap_write_hash
         heap_check_all = pwned.platform.heap_check_all
-        if any(value == 0 for value in [heap_base, heap_offset, heap_state, heap_write_hash, heap_check_all]):
+        if any(
+            _ == 0
+            for _ in [
+                heap_base,
+                heap_offset,
+                heap_state,
+                heap_write_hash,
+                heap_check_all,
+            ]
+        ):
             print("Device not supported for --repair-heap")
             return
         block1 = pack("<8Q", 0, 0, 0, heap_state, 2, 132, 128, 0)
