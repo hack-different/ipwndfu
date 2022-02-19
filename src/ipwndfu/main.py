@@ -412,8 +412,8 @@ def decrypt_gid(device, arg, match=None):
         print(f"Decrypting with {pwned.platform.name()} GID key.")
         print(
             pwned.aes(
-                arg.decode("hex"), usbexec.AES_DECRYPT, usbexec.AES_GID_KEY
-            ).encode("hex")
+                bytes.fromhex(arg), usbexec.AES_DECRYPT, usbexec.AES_GID_KEY
+            ).hex()
         )
     else:
         device = PwnedDFUDevice()
@@ -435,8 +435,8 @@ def encrypt_gid(device, arg):
         print(f"Encrypting with {pwned.platform.name()} GID key.")
         print(
             pwned.aes(
-                arg.decode("hex"), usbexec.AES_ENCRYPT, usbexec.AES_GID_KEY
-            ).encode("hex")
+                bytes.fromhex(arg), usbexec.AES_ENCRYPT, usbexec.AES_GID_KEY
+            ).hex()
         )
     else:
         device = PwnedDFUDevice()
@@ -458,8 +458,8 @@ def decrypt_uid(device, arg):
         print(f"Decrypting with {pwned.platform.name()} device-specific UID key.")
         print(
             pwned.aes(
-                arg.decode("hex"), usbexec.AES_DECRYPT, usbexec.AES_UID_KEY
-            ).encode("hex")
+                bytes.fromhex(arg), usbexec.AES_DECRYPT, usbexec.AES_UID_KEY
+            ).hex()
         )
     else:
         device = PwnedDFUDevice()
@@ -481,8 +481,8 @@ def encrypt_uid(device, arg):
         print(f"Encrypting with {pwned.platform.name()} device-specific UID key.")
         print(
             pwned.aes(
-                arg.decode("hex"), usbexec.AES_ENCRYPT, usbexec.AES_UID_KEY
-            ).encode("hex")
+                bytes.fromhex(arg), usbexec.AES_ENCRYPT, usbexec.AES_UID_KEY
+            ).hex()
         )
     else:
         device = PwnedDFUDevice()
