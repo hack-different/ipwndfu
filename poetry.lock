@@ -143,14 +143,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "distro"
-version = "1.7.0"
-description = "Distro - an OS platform information API"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[[package]]
 name = "eradicate"
 version = "2.0.0"
 description = "Removes commented-out code."
@@ -625,23 +617,9 @@ python-versions = ">=3.6.0"
 name = "pyyaml"
 version = "6.0"
 description = "YAML parser and emitter for Python"
-category = "dev"
-optional = false
-python-versions = ">=3.6"
-
-[[package]]
-name = "ruyaml"
-version = "0.91.0"
-description = "ruyaml is a fork of ruamel.yaml"
 category = "main"
 optional = false
 python-versions = ">=3.6"
-
-[package.dependencies]
-distro = ">=1.3.0"
-
-[package.extras]
-docs = ["sphinx"]
 
 [[package]]
 name = "six"
@@ -696,6 +674,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "types-pyyaml"
+version = "6.0.4"
+description = "Typing stubs for PyYAML"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.1.1"
 description = "Backported and Experimental Type Hints for Python 3.6+"
@@ -744,7 +730,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "5592391df90e74677be695882bfecae3cc1166ce6a655705847752499cd9fa13"
+content-hash = "dc17a7f96fb5f9528230726852953a626dae56c23d0c0f1fcfcf8b3dd18a80b4"
 
 [metadata.files]
 astor = [
@@ -920,10 +906,6 @@ cryptography = [
 distlib = [
     {file = "distlib-0.3.4-py2.py3-none-any.whl", hash = "sha256:6564fe0a8f51e734df6333d08b8b94d4ea8ee6b99b5ed50613f731fd4089f34b"},
     {file = "distlib-0.3.4.zip", hash = "sha256:e4b58818180336dc9c529bfb9a0b58728ffc09ad92027a3f30b7cd91e3458579"},
-]
-distro = [
-    {file = "distro-1.7.0-py3-none-any.whl", hash = "sha256:d596311d707e692c2160c37807f83e3820c5d539d5a83e87cfb6babd8ba3a06b"},
-    {file = "distro-1.7.0.tar.gz", hash = "sha256:151aeccf60c216402932b52e40ee477a939f8d58898927378a02abbe852c1c39"},
 ]
 eradicate = [
     {file = "eradicate-2.0.0.tar.gz", hash = "sha256:27434596f2c5314cc9b31410c93d8f7e8885747399773cd088d3adea647a60c8"},
@@ -1197,10 +1179,6 @@ pyyaml = [
     {file = "PyYAML-6.0-cp39-cp39-win_amd64.whl", hash = "sha256:b3d267842bf12586ba6c734f89d1f5b871df0273157918b0ccefa29deb05c21c"},
     {file = "PyYAML-6.0.tar.gz", hash = "sha256:68fb519c14306fec9720a2a5b45bc9f0c8d1b9c72adf45c37baedfcd949c35a2"},
 ]
-ruyaml = [
-    {file = "ruyaml-0.91.0-py3-none-any.whl", hash = "sha256:50e0ee3389c77ad340e209472e0effd41ae0275246df00cdad0a067532171755"},
-    {file = "ruyaml-0.91.0.tar.gz", hash = "sha256:6ce9de9f4d082d696d3bde264664d1bcdca8f5a9dff9d1a1f1a127969ab871ab"},
-]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
@@ -1224,6 +1202,10 @@ types-enum34 = [
 types-ipaddress = [
     {file = "types-ipaddress-1.0.8.tar.gz", hash = "sha256:a03df3be5935e50ba03fa843daabff539a041a28e73e0fce2c5705bee54d3841"},
     {file = "types_ipaddress-1.0.8-py3-none-any.whl", hash = "sha256:4933b74da157ba877b1a705d64f6fa7742745e9ffd65e51011f370c11ebedb55"},
+]
+types-pyyaml = [
+    {file = "types-PyYAML-6.0.4.tar.gz", hash = "sha256:6252f62d785e730e454dfa0c9f0fb99d8dae254c5c3c686903cf878ea27c04b7"},
+    {file = "types_PyYAML-6.0.4-py3-none-any.whl", hash = "sha256:693b01c713464a6851f36ff41077f8adbc6e355eda929addfb4a97208aea9b4b"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.1.1-py3-none-any.whl", hash = "sha256:21c85e0fe4b9a155d0799430b0ad741cdce7e359660ccbd8b530613e8df88ce2"},

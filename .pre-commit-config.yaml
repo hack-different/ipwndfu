@@ -91,6 +91,7 @@ repos:
         additional_dependencies:
           - types-requests
           - types-cryptography
+          - types-PyYAML
 
   - repo: https://github.com/pre-commit/pre-commit
     rev: v2.17.0
