@@ -531,7 +531,7 @@ def repair_heap(device=None, match_device=None):
         heap_state = pwned.platform.heap_state
         heap_write_hash = pwned.platform.heap_write_hash
         heap_check_all = pwned.platform.heap_check_all
-        if heap_base == 0 or heap_offset == 0 or heap_state == 0 or heap_write_hash == 0 or heap_check_all == 0:
+        if any(_ == 0 for _ in [heap_base, heap_offset, heap_state, heap_write_hash, heap_check_all]):
             print("Device not supported for --repair-heap")
             return
         block1 = pack("<8Q", 0, 0, 0, heap_state, 2, 132, 128, 0)
