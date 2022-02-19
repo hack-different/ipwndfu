@@ -809,13 +809,13 @@ def exploit_config(serial_number: str) -> Tuple[bytes, DeviceConfig]:
     for config in all_exploit_configs():
         if f"SRTG:[{config.version}]" in serial_number:
             return payload(config.cpid), config
-    for config in all_exploit_configs():
-        if f"CPID:{config.cpid}" in serial_number:
+        elif "CPID:{hex(config.cpid)[2:]}" in serial_number:
             print("ERROR: CPID is compatible, but serial number string does not match.")
             print(
                 "Make sure device is in SecureROM DFU Mode and not LLB/iBSS DFU Mode. Exiting."
             )
             sys.exit(1)
+
     print("ERROR: This is not a compatible device. Exiting.")
     sys.exit(1)
 
