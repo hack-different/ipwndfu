@@ -9,10 +9,10 @@
 # After that are offsets used for various exploits
 
 usb:
-  - &usb_payload_arm64
+  - &checkm8_payload_arm64
     payload_offset: 0x180
     payload_size: 0x240
-  - &usb_payload_armv7
+  - &checkm8_payload_armv7
     payload_offset: 0x180
     payload_size: 0x140
   - &usb_magic_32
@@ -48,27 +48,27 @@ modern_platforms:
   sigcheck_patch: 0xd2800000
 
   usb:
-    <<: [*usb_payload_arm64, *usb_magic_64]
+    <<: *usb_magic_64
     load_address: 0x180380000
     usb_core_do_io: 0x10000EBB4
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_arm64
         usb_descriptors: 0x180088760
         usb_serial_number: 0x1800888C8
         usb_create_string_descriptor: 0x10000E074
         usb_srnm_string_descriptor: 0x18008062A
         payload_destination: 0x1800E0C00
         payload_pointer: 0x180088878
-      config:
-        large_leak:
-        hole:
-        leak:
-        overwrite:
-          preamble:
-          pack:
-          args:
+      large_leak:
+      hole:
+      leak:
+      overwrite:
+        preamble:
+        pack:
+        args:
 
 
 - cpid: 0x8000
@@ -92,27 +92,27 @@ modern_platforms:
   sigcheck_patch: 0xd2800000
 
   usb:
-    <<: [*usb_payload_arm64, *usb_magic_32]
+    <<: *usb_magic_32
     load_address: 0x10000000
     usb_core_do_io: 0x7621
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_arm64
         usb_descriptors: 0x3402D87C
         usb_serial_number: 0x3402DDF8
         usb_create_string_descriptor: 0x72A9
         usb_srnm_string_descriptor: 0x3402C2DA
         payload_destination: 0x34039800
         payload_pointer: 0x3402D92C
-      config:
-        large_leak:
-        hole:
-        leak:
-        overwrite: &overwrite_t800x
-          preamble: 0x640
-          pack: "<20xI4x"
-          args: 0x10000000
+      large_leak:
+      hole:
+      leak:
+      overwrite: &overwrite_t800x
+        preamble: 0x640
+        pack: "<20xI4x"
+        args: 0x10000000
 
 - cpid: 0x8002
   cprv: 0x10
@@ -135,23 +135,23 @@ modern_platforms:
   sigcheck_patch: 0x20
 
   usb:
-    <<: [*usb_payload_armv7, *usb_magic_32]
+    <<: *usb_magic_32
     load_address: 0x48818000
     usb_core_do_io: 0x9411
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_armv7
         usb_descriptors: 0x4880629C
         usb_serial_number: 0x48802AB8
         usb_create_string_descriptor: 0x8CA5
         usb_srnm_string_descriptor: 0x4880037A
         payload_destination: 0x48806E00
         payload_pointer: 0x48806344
-      config:
-        hole: 0x05
-        leak: 0x01
-        overwrite: *overwrite_t800x
+      hole: 0x05
+      leak: 0x01
+      overwrite: *overwrite_t800x
 
 
 - cpid: 0x8003
@@ -175,24 +175,24 @@ modern_platforms:
   sigcheck_patch: 0xd2800000
 
   usb:
-    <<: [*usb_payload_arm64, *usb_magic_64]
+    <<: *usb_magic_64
     load_address: 0x180380000
     usb_core_do_io: 0x10000EE78
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_arm64
         usb_descriptors: 0x1800877E0
         usb_serial_number: 0x180087958
         usb_create_string_descriptor: 0x10000E354
         usb_srnm_string_descriptor: 0x1800807DA
         payload_destination: 0x1800E0C00
         payload_pointer: 0x1800878F8
-      config:
-        large_leak:
-        hole:
-        leak:
-        overwrite: *overwrite_t800x
+      large_leak:
+      hole:
+      leak:
+      overwrite: *overwrite_t800x
 
 
 - cpid: 0x8004
@@ -216,23 +216,23 @@ modern_platforms:
   sigcheck_patch: 0x20
 
   usb:
-    <<: [*usb_payload_armv7, *usb_magic_32]
+    <<: *usb_magic_32
     load_address: 0x48818000
     usb_core_do_io: 0x85A1
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_armv7
         usb_descriptors: 0x488062DC
         usb_serial_number: 0x48802AE8
         usb_create_string_descriptor: 0x7E35
         usb_srnm_string_descriptor: 0x488003CA
         payload_destination: 0x48806E00
         payload_pointer: 0x48806384
-      config:
-        hole: 0x05
-        leak: 0x01
-        overwrite: *overwrite_t800x
+      hole: 0x05
+      leak: 0x01
+      overwrite: *overwrite_t800x
 
 
 - cpid: 0x8010
@@ -267,31 +267,31 @@ modern_platforms:
     handle_interface_request: 0x10000DFB8
 
   usb:
-    <<: [*usb_payload_arm64, *usb_magic_64]
+    <<: *usb_magic_64
     load_address: 0x1800B0000
     usb_core_do_io: 0x10000DC98
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_arm64
         usb_descriptors: 0x180088A30
         usb_serial_number: 0x180083CF8
         usb_create_string_descriptor: 0x10000D150
         usb_srnm_string_descriptor: 0x1800805DA
         payload_destination: 0x1800AFC00
         payload_pointer: 0x180088B48
-      config:
-        hole: 0x06
-        leak: 0x01
-        overwrite:
-          preamble: 0x580
-          pack: "<32x2Q16x32x2QI"
-          args:
-            - nop
-            - 0x1800B0800
-            - nop
-            - 0x1800B0800
-            - 0xBEEFBEEF
+      hole: 0x06
+      leak: 0x01
+      overwrite:
+        preamble: 0x580
+        pack: "<32x2Q16x32x2QI"
+        args:
+          - nop
+          - 0x1800B0800
+          - nop
+          - 0x1800B0800
+          - 0xBEEFBEEF
 
 
 - cpid: 0x8011
@@ -324,31 +324,31 @@ modern_platforms:
     handle_interface_request: 0x10000E08C
 
   usb:
-    <<: [*usb_payload_arm64, *usb_magic_64]
+    <<: *usb_magic_64
     load_address: 0x1800B0000
     usb_core_do_io: 0x10000DD64
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_arm64
         usb_descriptors: 0x180088948
         usb_serial_number: 0x180083D28
         usb_create_string_descriptor: 0x10000D234
         usb_srnm_string_descriptor: 0x18008062A
         payload_destination: 0x1800AFC00
         payload_pointer: 0x180088A58
-      config:
-        hole: 0x06
-        leak: 0x01
-        overwrite:
-          preamble: 0x500
-          pack: "<32x2Q16x32x2QI"
-          args:
-            - nop
-            - 0x1800B0800
-            - nop
-            - 0x1800B0800
-            - 0xBEEFBEEF
+      hole: 0x06
+      leak: 0x01
+      overwrite:
+        preamble: 0x500
+        pack: "<32x2Q16x32x2QI"
+        args:
+          - nop
+          - 0x1800B0800
+          - nop
+          - 0x1800B0800
+          - 0xBEEFBEEF
 
 
 - cpid: 0x8012
@@ -383,28 +383,28 @@ modern_platforms:
     handle_interface_request: 0x10000BFFC
 
   usb:
-    <<: [*usb_payload_arm64, *usb_magic_64]
+    <<: *usb_magic_64
     load_address: 0x18001C000
     usb_core_do_io: 0x10000BD20
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_arm64
         usb_descriptors: 0x1800089F8
         usb_serial_number: 0x180003AF8
         usb_create_string_descriptor: 0x10000B1CC
         usb_srnm_string_descriptor: 0x18000082A
         payload_destination: 0x18001BC00
         payload_pointer: 0x180008B08
-      config:
-        hole: 0x06
-        leak: 0x01
-        overwrite:
-          preamble: 0x540
-          pack: "<32x2Q"
-          args:
-            - nop
-            - 0x18001C800
+      hole: 0x06
+      leak: 0x01
+      overwrite:
+        preamble: 0x540
+        pack: "<32x2Q"
+        args:
+          - nop
+          - 0x18001C800
 
 
 - cpid: 0x8015
@@ -443,31 +443,31 @@ modern_platforms:
     handle_interface_request: 0x10000BCCC
 
   usb:
-    <<: [*usb_payload_arm64, *usb_magic_64]
+    <<: *usb_magic_64
     load_address: 0x18001C000
     usb_core_do_io: 0x10000B9A8
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_arm64
         usb_descriptors: 0x180008528
         usb_serial_number: 0x180003A78
         usb_create_string_descriptor: 0x10000AE80
         usb_srnm_string_descriptor: 0x1800008FA
         payload_destination: 0x18001BC00
         payload_pointer: 0x180008638
-      config:
-        hole: 0x06
-        leak: 0x01
-        overwrite:
-          preamble: 0x500
-          pack: "<32x2Q16x32x2Q12xI"
-          args:
-            - nop
-            - 0x18001C020
-            - nop
-            - 0x18001C020
-            - 0xBEEFBEEF
+      hole: 0x06
+      leak: 0x01
+      overwrite:
+        preamble: 0x500
+        pack: "<32x2Q16x32x2Q12xI"
+        args:
+          - nop
+          - 0x18001C020
+          - nop
+          - 0x18001C020
+          - 0xBEEFBEEF
 
 
 - cpid: 0x8947
@@ -491,26 +491,26 @@ modern_platforms:
   sigcheck_patch: 0x20
 
   usb:
-    <<: [*usb_payload_armv7, *usb_magic_32]
+    <<: *usb_magic_32
     load_address: 0x34000000
     usb_core_do_io: 0x79ED
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_armv7
         usb_descriptors: 0x3402D87C
         usb_serial_number:  0x3402DDF8
         usb_create_string_descriptor: 0x72A9
         usb_srnm_string_descriptor: 0x3402C2DA
         payload_destination: 0x34039800
         payload_pointer: 0x3402D92C
-      config:
-        large_leak: 0x272
-        overwrite:
-          preamble: 0x660
-          pack: "<20xI4x"
-          args:
-            - 0x34000000
+      large_leak: 0x272
+      overwrite:
+        preamble: 0x660
+        pack: "<20xI4x"
+        args:
+          - 0x34000000
 
 
 - cpid: 0x8950
@@ -538,26 +538,26 @@ modern_platforms:
   sigcheck_patch: 0x20
 
   usb:
-    <<: [*usb_payload_armv7, *usb_magic_32]
+    <<: *usb_magic_32
     load_address: 0x10000000
     usb_core_do_io: 0x7621
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_armv7
         usb_descriptors: 0x10061988
         usb_serial_number: 0x10061F80
         usb_create_string_descriptor: 0x7C55
         usb_srnm_string_descriptor: 0x100600D8
         payload_destination: 0x10079800
         payload_pointer: 0x10061A24
-      config:
-        large_leak: 0x293
-        overwrite: &overwrite_895x
-          preamble: 0x640
-          pack: "<20xI4x"
-          args:
-            - 0x10000000
+      large_leak: 0x293
+      overwrite: &overwrite_895x
+        preamble: 0x640
+        pack: "<20xI4x"
+        args:
+          - 0x10000000
 
 
 - cpid: 0x8955
@@ -581,22 +581,22 @@ modern_platforms:
   sigcheck_patch: 0x20
 
   usb:
-    <<: [*usb_payload_armv7, *usb_magic_32]
+    <<: *usb_magic_32
     load_address: 0x10000000
     usb_core_do_io: 0x7661
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_armv7
         usb_descriptors: 0x10061988
         usb_serial_number: 0x10061F80
         usb_create_string_descriptor: 0x7C95
         usb_srnm_string_descriptor: 0x100600D8
         payload_destination: 0x10079800
         payload_pointer: 0x10061A24
-      config:
-        large_leak: 0x293
-        overwrite: *overwrite_895x
+      large_leak: 0x293
+      overwrite: *overwrite_895x
 
 
 - cpid: 0x8960
@@ -620,26 +620,26 @@ modern_platforms:
   sigcheck_patch: 0xd2800000
 
   usb:
-    <<: [*usb_payload_arm64, *usb_magic_64]
+    <<: *usb_magic_64
     load_address: 0x180380000
     usb_core_do_io: 0x10000CC78
 
   exploit_configs:
     checkm8:
       constants:
+        <<: *checkm8_payload_arm64
         usb_descriptors: 0x180086B58
         usb_serial_number: 0x180086CDC
         usb_create_string_descriptor: 0x10000BFEC
         usb_srnm_string_descriptor: 0x180080562
         payload_destination: 0x18037FC00
         payload_pointer: 0x180086C70
-      config:
-        large_leak: 0x1F00
-        overwrite:
-          preamble: 0x580
-          pack: "<32xQ8x"
-          args:
-            - 0x180380000
+      large_leak: 0x1F00
+      overwrite:
+        preamble: 0x580
+        pack: "<32xQ8x"
+        args:
+          - 0x180380000
 
 
 legacy_platforms:

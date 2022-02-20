@@ -1,7 +1,7 @@
 import functools
 import pkgutil
 import typing
-from dataclasses import dataclass, field
+from dataclasses import astuple, dataclass, field
 from typing import Optional
 
 import yaml
@@ -14,9 +14,11 @@ class USBConstants:
     done_magic: int
     memc_magic: int
     mems_magic: int
-    payload_offset: int
-    payload_size: int
     usb_core_do_io: int
+
+    @property
+    def constants(self) -> list[int]:
+        return list(astuple(self))
 
 
 @dataclass
@@ -44,6 +46,10 @@ class DevicePlatform:
     gadgets: typing.Dict[str, int] = field(default_factory=dict)
     exploit_configs: typing.Dict[str, dict] = field(default_factory=dict)
 
+    def __post_init__(self):
+        if isinstance(self.usb, dict):
+            self.usb = USBConstants(**self.usb)
+
     def name(self) -> str:
         if 0x8720 <= self.cpid <= 0x8960:
             return f"s5l{self.cpid}xsi"
@@ -54,14 +60,18 @@ class DevicePlatform:
 
     @classmethod
     @functools.cache
-    def platforms(cls) -> typing.Sequence["DevicePlatform"]:
+    def platforms(cls) -> typing.Dict[int, "DevicePlatform"]:
         data = pkgutil.get_data("ipwndfu", "data/platforms.yaml")
 
         assert data
 
         entries = yaml.safe_load(data)
 
-        return [cls(**entry) for entry in entries["modern_platforms"]]
+        return {entry["cpid"]: cls(**entry) for entry in entries["modern_platforms"]}
+
+    @staticmethod
+    def platform_for_cpid(cpid: int) -> typing.Optional["DevicePlatform"]:
+        return DevicePlatform.platforms()[cpid]
 
 
-all_platforms = DevicePlatform.platforms()
+all_platforms = DevicePlatform.platforms().values()
