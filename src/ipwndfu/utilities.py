@@ -4,6 +4,10 @@ import sys
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
+def from_hex_str(dat: str) -> bytes:
+    return bytes(bytearray.fromhex(dat))
+
+
 def apply_patches(binary, patches):
     for (offset, data) in patches:
         binary = binary[:offset] + data + binary[offset + len(data) :]

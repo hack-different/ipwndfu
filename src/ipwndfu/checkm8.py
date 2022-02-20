@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Optional, Tuple, Union
 import usb  # type: ignore
 
 from ipwndfu import dfu
+from ipwndfu.utilities import from_hex_str
 
 if TYPE_CHECKING:
     from usb.core import Device  # type: ignore
@@ -21,10 +22,6 @@ if TYPE_CHECKING:
 request = None
 transfer_ptr = None
 never_free_device = None
-
-
-def from_hex_str(dat: str) -> bytes:
-    return bytes(bytearray.fromhex(dat))
 
 
 def libusb1_create_ctrl_transfer(device: "Device", request, timeout):

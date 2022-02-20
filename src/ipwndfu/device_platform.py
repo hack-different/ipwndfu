@@ -1,3 +1,4 @@
+import functools
 import pkgutil
 import typing
 from dataclasses import dataclass, field
@@ -51,15 +52,16 @@ class DevicePlatform:
         else:
             return f"t{self.cpid}si"
 
+    @classmethod
+    @functools.cache
+    def platforms(cls) -> typing.Sequence["DevicePlatform"]:
+        data = pkgutil.get_data("ipwndfu", "data/platforms.yaml")
 
-def _load_platforms() -> typing.Sequence[DevicePlatform]:
-    data = pkgutil.get_data("ipwndfu", "data/platforms.yaml")
+        assert data
 
-    assert data
+        entries = yaml.safe_load(data)
 
-    entries = yaml.safe_load(data)
-
-    return [DevicePlatform(**entry) for entry in entries["modern_platforms"]]
+        return [cls(**entry) for entry in entries["modern_platforms"]]
 
 
-all_platforms = _load_platforms()
+all_platforms = DevicePlatform.platforms()
