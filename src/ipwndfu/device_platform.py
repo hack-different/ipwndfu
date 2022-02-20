@@ -16,7 +16,7 @@ class USBConstants:
     usb_core_do_io: int
 
     @property
-    def constants(self) -> list[int]:
+    def constants(self) -> typing.List[int]:
         return list(astuple(self))
 
 
