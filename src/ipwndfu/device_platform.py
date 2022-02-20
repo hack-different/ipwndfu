@@ -1,9 +1,21 @@
 import pkgutil
 import typing
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 import yaml
+
+
+@dataclass
+class USBConstants:
+    load_address: int
+    exec_magic: int
+    done_magic: int
+    memc_magic: int
+    mems_magic: int
+    payload_offset: int
+    payload_size: int
+    usb_core_do_io: int
 
 
 @dataclass
@@ -27,6 +39,9 @@ class DevicePlatform:
     heap_state: int
     heap_write_hash: int
     heap_check_all: int
+    usb: USBConstants
+    gadgets: typing.Dict[str, int] = field(default_factory=dict)
+    exploit_configs: typing.Dict[str, dict] = field(default_factory=dict)
 
     def name(self) -> str:
         if 0x8720 <= self.cpid <= 0x8960:
@@ -44,7 +59,7 @@ def _load_platforms() -> typing.Sequence[DevicePlatform]:
 
     entries = yaml.safe_load(data)
 
-    return [DevicePlatform(**entry) for entry in entries]
+    return [DevicePlatform(**entry) for entry in entries["modern_platforms"]]
 
 
 all_platforms = _load_platforms()

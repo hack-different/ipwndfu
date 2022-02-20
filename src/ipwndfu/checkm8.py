@@ -11,6 +11,7 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, Optional, Tuple, Union
 
 import usb  # type: ignore
+
 from ipwndfu import dfu
 
 if TYPE_CHECKING:
@@ -218,10 +219,10 @@ class DeviceConfig:
             self.hole = 0
 
 
-PAYLOAD_OFFSET_ARMV7 = 384
-PAYLOAD_SIZE_ARMV7 = 320
-PAYLOAD_OFFSET_ARM64 = 384
-PAYLOAD_SIZE_ARM64 = 576
+PAYLOAD_OFFSET_ARMV7 = 0x180
+PAYLOAD_SIZE_ARMV7 = 0x140
+PAYLOAD_OFFSET_ARM64 = 0x180
+PAYLOAD_SIZE_ARM64 = 0x240
 
 
 def payload(cpid: int) -> bytes:
