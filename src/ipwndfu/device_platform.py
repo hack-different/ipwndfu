@@ -116,11 +116,11 @@ class DevicePlatform:
 
     def name(self):
         if 0x8720 <= self.cpid <= 0x8960:
-            return f"s5l{hex(self.cpid)[2:]}xsi"
+            return f"s5l{self.cpid:02x}xsi"
         elif self.cpid in [0x7002, 0x8000, 0x8001, 0x8003]:
-            return f"s{hex(self.cpid)[2:]}si"
+            return f"s{self.cpid:02x}si"
         else:
-            return f"t{hex(self.cpid)[2:]}si"
+            return f"t{self.cpid:02x}si"
 
 
 all_platforms = [
