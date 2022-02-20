@@ -576,7 +576,7 @@ def patch_sigchecks(device=None, match_device=None):
         sigcheck_addr = pwned.platform.sigcheck_addr
         sigcheck_patch = pwned.platform.sigcheck_patch
         result = pwned.read_memory_uint32(sigcheck_addr)
-        if sigcheck_addr == 0 or sigcheck_patch == 0:
+        if any(addr == 0 for addr in [sigcheck_addr, sigcheck_patch]):
             print("Device not supported for --patch-sigchecks")
             return
         if result == sigcheck_patch:
