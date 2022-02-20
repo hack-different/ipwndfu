@@ -1,4 +1,3 @@
-import functools
 import pkgutil
 import typing
 from dataclasses import astuple, dataclass, field
@@ -59,7 +58,6 @@ class DevicePlatform:
             return f"t{self.cpid:x}si"
 
     @classmethod
-    @functools.cache
     def platforms(cls) -> typing.Dict[int, "DevicePlatform"]:
         data = pkgutil.get_data("ipwndfu", "data/platforms.yaml")
 
