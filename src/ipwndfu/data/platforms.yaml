@@ -62,13 +62,15 @@ modern_platforms:
         usb_srnm_string_descriptor: 0x18008062A
         payload_destination: 0x1800E0C00
         payload_pointer: 0x180088878
-      large_leak:
+      large_leak: 0x800
       hole:
       leak:
-      overwrite:
-        preamble:
-        pack:
+      overwrite: &overwrite_t7000
+        preamble: 0x560
+        pack: "<32xQQ"
         args:
+          - 0x180380000
+          - 0x000000000
 
 
 - cpid: 0x8000
@@ -106,13 +108,10 @@ modern_platforms:
         usb_srnm_string_descriptor: 0x3402C2DA
         payload_destination: 0x34039800
         payload_pointer: 0x3402D92C
-      large_leak:
+      large_leak: 0x800
       hole:
       leak:
-      overwrite: &overwrite_t800x
-        preamble: 0x640
-        pack: "<20xI4x"
-        args: 0x10000000
+      overwrite: *overwrite_t7000
 
 - cpid: 0x8002
   cprv: 0x10
@@ -151,8 +150,11 @@ modern_platforms:
         payload_pointer: 0x48806344
       hole: 0x05
       leak: 0x01
-      overwrite: *overwrite_t800x
-
+      overwrite: &overwrite_t800x
+        preamble: 0x640
+        pack: "<20xI4x"
+        args:
+        - 0x10000000
 
 - cpid: 0x8003
   cprv: 0x01
@@ -189,10 +191,10 @@ modern_platforms:
         usb_srnm_string_descriptor: 0x1800807DA
         payload_destination: 0x1800E0C00
         payload_pointer: 0x1800878F8
-      large_leak:
+      large_leak: 0x800
       hole:
       leak:
-      overwrite: *overwrite_t800x
+      overwrite: *overwrite_t7000
 
 
 - cpid: 0x8004

@@ -1,5 +1,6 @@
 import subprocess
 import sys
+from collections import namedtuple
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
@@ -35,3 +36,45 @@ def hex_dump(data, address):
         sys.exit(1)
 
     return stdout
+
+
+SerialNumber = namedtuple(
+    "SerialNumber",
+    ["cpid", "cprv", "cpfm", "scep", "bdid", "ecid", "ibfl", "srtg", "pwned"],
+)
+
+
+def get_serial(_serial) -> SerialNumber:
+    """Parse a serial number (from the USB device) into its key-value pairings."""
+
+    tokens = _serial.split(" ")
+    cpid = ""
+    cprv = ""
+    cpfm = ""
+    scep = ""
+    bdid = ""
+    ecid = ""
+    ibfl = ""
+    srtg = ""
+    pwned = False
+    for t in tokens:
+        v = t.split(":")[-1]
+        if "CPID:" in t:
+            cpid = v
+        elif "CPRV" in t:
+            cprv = v
+        elif "CPFM" in t:
+            cpfm = v
+        elif "SCEP" in t:
+            scep = v
+        elif "BDID" in t:
+            bdid = v
+        elif "ECID" in t:
+            ecid = v
+        elif "IBFL" in t:
+            ibfl = v
+        elif "SRTG" in t:
+            srtg = v
+        elif "PWND" in t:
+            pwned = True
+    return SerialNumber(cpid, cprv, cpfm, scep, bdid, ecid, ibfl, srtg, pwned)

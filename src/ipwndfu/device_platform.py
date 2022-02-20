@@ -54,9 +54,9 @@ class DevicePlatform:
         if 0x8720 <= self.cpid <= 0x8960:
             return f"s5l{self.cpid}xsi"
         elif self.cpid in [0x7002, 0x8000, 0x8001, 0x8003]:
-            return f"s{self.cpid}si"
+            return f"s{self.cpid:x}si"
         else:
-            return f"t{self.cpid}si"
+            return f"t{self.cpid:x}si"
 
     @classmethod
     @functools.cache
@@ -67,10 +67,17 @@ class DevicePlatform:
 
         entries = yaml.safe_load(data)
 
-        return {entry["cpid"]: cls(**entry) for entry in entries["modern_platforms"]}
+        return {
+            int(entry["cpid"]): cls(**entry) for entry in entries["modern_platforms"]
+        }
 
     @staticmethod
-    def platform_for_cpid(cpid: int) -> typing.Optional["DevicePlatform"]:
+    def platform_for_cpid(
+        cpid: typing.Union[int, str]
+    ) -> typing.Optional["DevicePlatform"]:
+        if isinstance(cpid, str):
+            cpid = int(cpid, 16)
+
         return DevicePlatform.platforms()[cpid]
 
 
