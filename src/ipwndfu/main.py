@@ -538,8 +538,8 @@ def repair_heap(device=None, match_device=None):
         heap_write_hash = pwned.platform.heap_write_hash
         heap_check_all = pwned.platform.heap_check_all
         if any(
-            _ == 0
-            for _ in [
+            addr == 0
+            for addr in [
                 heap_base,
                 heap_offset,
                 heap_state,
