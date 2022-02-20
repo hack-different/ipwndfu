@@ -109,10 +109,10 @@ modern_platforms:
         large_leak:
         hole:
         leak:
-        overwrite:
-          preamble:
-          pack:
-          args:
+        overwrite: &overwrite_t800x
+          preamble: 0x640
+          pack: "<20xI4x"
+          args: 0x10000000
 
 - cpid: 0x8002
   cprv: 0x10
@@ -151,10 +151,7 @@ modern_platforms:
       config:
         hole: 0x05
         leak: 0x01
-        overwrite:
-          preamble:
-          pack:
-          args:
+        overwrite: *overwrite_t800x
 
 
 - cpid: 0x8003
@@ -195,10 +192,7 @@ modern_platforms:
         large_leak:
         hole:
         leak:
-        overwrite:
-          preamble:
-          pack:
-          args:
+        overwrite: *overwrite_t800x
 
 
 - cpid: 0x8004
@@ -238,10 +232,7 @@ modern_platforms:
       config:
         hole: 0x05
         leak: 0x01
-        overwrite:
-          preamble:
-          pack:
-          args:
+        overwrite: *overwrite_t800x
 
 
 - cpid: 0x8010
@@ -293,9 +284,14 @@ modern_platforms:
         hole: 0x06
         leak: 0x01
         overwrite:
-          preamble:
-          pack:
+          preamble: 0x580
+          pack: "<32x2Q16x32x2QI"
           args:
+            - nop
+            - 0x1800B0800
+            - nop
+            - 0x1800B0800
+            - 0xBEEFBEEF
 
 
 - cpid: 0x8011
@@ -346,7 +342,7 @@ modern_platforms:
         leak: 0x01
         overwrite:
           preamble: 0x500
-          pack: <32x2Q16x32x2QI
+          pack: "<32x2Q16x32x2QI"
           args:
             - nop
             - 0x1800B0800
@@ -404,9 +400,11 @@ modern_platforms:
         hole: 0x06
         leak: 0x01
         overwrite:
-          preamble:
-          pack:
+          preamble: 0x540
+          pack: "<32x2Q"
           args:
+            - nop
+            - 0x18001C800
 
 
 - cpid: 0x8015
@@ -462,9 +460,14 @@ modern_platforms:
         hole: 0x06
         leak: 0x01
         overwrite:
-          preamble:
-          pack:
+          preamble: 0x500
+          pack: "<32x2Q16x32x2Q12xI"
           args:
+            - nop
+            - 0x18001C020
+            - nop
+            - 0x18001C020
+            - 0xBEEFBEEF
 
 
 - cpid: 0x8947
@@ -504,9 +507,10 @@ modern_platforms:
       config:
         large_leak: 0x272
         overwrite:
-          preamble:
-          pack:
+          preamble: 0x660
+          pack: "<20xI4x"
           args:
+            - 0x34000000
 
 
 - cpid: 0x8950
@@ -549,8 +553,11 @@ modern_platforms:
         payload_pointer: 0x10061A24
       config:
         large_leak: 0x293
-        overwrite:
-        overwrite_offset: 0
+        overwrite: &overwrite_895x
+          preamble: 0x640
+          pack: "<20xI4x"
+          args:
+            - 0x10000000
 
 
 - cpid: 0x8955
@@ -589,8 +596,7 @@ modern_platforms:
         payload_pointer: 0x10061A24
       config:
         large_leak: 0x293
-        overwrite:
-        overwrite_offset: 0
+        overwrite: *overwrite_895x
 
 
 - cpid: 0x8960
@@ -630,6 +636,10 @@ modern_platforms:
       config:
         large_leak: 0x1F00
         overwrite:
+          preamble: 0x580
+          pack: "<32xQ8x"
+          args:
+            - 0x180380000
 
 
 legacy_platforms:
