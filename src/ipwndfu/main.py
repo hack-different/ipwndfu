@@ -610,7 +610,10 @@ def boot(device=None):
     serial_number = device.serial_number
     dfu.release_device(device)
 
-    if "CPID:8015" not in serial_number or "PWND:[checkm8]" not in serial_number:
+    if (
+        "CPID:8015" not in serial_number
+        and not any(f"BDID:{bdid}" in serial_number for bdid in ["6", "14"])
+    ) or "PWND:[checkm8]" not in serial_number:
         print(serial_number)
         print(
             "ERROR: Option --boot is currently only supported on iPhone X pwned with checkm8.",
