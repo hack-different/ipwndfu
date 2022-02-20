@@ -36,10 +36,10 @@ class DevicePlatform:
     demotion_reg: int
     sigcheck_addr: int
     sigcheck_patch: int
-    heap_state: int
-    heap_write_hash: int
-    heap_check_all: int
     usb: USBConstants
+    heap_state: int = 0
+    heap_write_hash: int = 0
+    heap_check_all: int = 0
     gadgets: typing.Dict[str, int] = field(default_factory=dict)
     exploit_configs: typing.Dict[str, dict] = field(default_factory=dict)
 

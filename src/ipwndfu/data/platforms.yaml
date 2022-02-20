@@ -8,6 +8,24 @@
 #
 # After that are offsets used for various exploits
 
+usb:
+  - &usb_payload_arm64
+    payload_offset: 0x180
+    payload_size: 0x240
+  - &usb_payload_armv7
+    payload_offset: 0x180
+    payload_size: 0x140
+  - &usb_magic_32
+    exec_magic: 0x65786563
+    done_magic: 0x646F6E65
+    memc_magic: 0x6D656D63
+    mems_magic: 0x6D656D73
+  - &usb_magic_64
+    exec_magic: 0x6578656365786563
+    done_magic: 0x646F6E65646F6E65
+    memc_magic: 0x6D656D636D656D63
+    mems_magic: 0x6D656D736D656D73
+
 modern_platforms:
 - cpid: 0x7000
   cprv: 0x11
@@ -26,21 +44,12 @@ modern_platforms:
   dram_base: 0x800000000
   demotion_reg: 0x20e02a000
 
-  heap_check_all: 0x0
-  heap_state: 0x0
-  heap_write_hash: 0x0
-
   sigcheck_addr: 0x100007e98
   sigcheck_patch: 0xd2800000
 
   usb:
+    <<: [*usb_payload_arm64, *usb_magic_64]
     load_address: 0x180380000
-    exec_magic: 0x6578656365786563
-    done_magic: 0x646F6E65646F6E65
-    memc_magic: 0x6D656D636D656D63
-    mems_magic: 0x6D656D736D656D73
-    payload_offset: 0x180
-    payload_size: 0x240
     usb_core_do_io: 0x10000EBB4
 
   exploit_configs:
@@ -54,10 +63,12 @@ modern_platforms:
         payload_pointer: 0x180088878
       config:
         large_leak:
-        overwrite:
-        overwrite_offset:
         hole:
         leak:
+        overwrite:
+          preamble:
+          pack:
+          args:
 
 
 - cpid: 0x8000
@@ -77,21 +88,12 @@ modern_platforms:
   dram_base: 0x800000000
   demotion_reg: 0x2102bc000
 
-  heap_check_all: 0x0
-  heap_state: 0x0
-  heap_write_hash: 0x0
-
   sigcheck_addr: 0x10000812c
   sigcheck_patch: 0xd2800000
 
   usb:
+    <<: [*usb_payload_arm64, *usb_magic_32]
     load_address: 0x10000000
-    exec_magic: 0x65786563
-    done_magic: 0x646F6E65
-    memc_magic: 0x6D656D63
-    mems_magic: 0x6D656D73
-    payload_offset: 0x180
-    payload_size: 0x240
     usb_core_do_io: 0x7621
 
   exploit_configs:
@@ -105,10 +107,12 @@ modern_platforms:
         payload_pointer: 0x3402D92C
       config:
         large_leak:
-        overwrite:
-        overwrite_offset:
         hole:
         leak:
+        overwrite:
+          preamble:
+          pack:
+          args:
 
 - cpid: 0x8002
   cprv: 0x10
@@ -127,21 +131,12 @@ modern_platforms:
   dram_base: 0x80000000
   demotion_reg: 0x481bc000
 
-  heap_check_all: 0x0
-  heap_state: 0x0
-  heap_write_hash: 0x0
-
   sigcheck_addr: 0x4452
   sigcheck_patch: 0x20
 
   usb:
+    <<: [*usb_payload_armv7, *usb_magic_32]
     load_address: 0x48818000
-    exec_magic: 0x65786563
-    done_magic: 0x646F6E65
-    memc_magic: 0x6D656D63
-    mems_magic: 0x6D656D73
-    payload_offset: 0x180
-    payload_size: 0x140
     usb_core_do_io: 0x9411
 
   exploit_configs:
@@ -154,9 +149,12 @@ modern_platforms:
         payload_destination: 0x48806E00
         payload_pointer: 0x48806344
       config:
-        overwrite:
         hole: 0x05
         leak: 0x01
+        overwrite:
+          preamble:
+          pack:
+          args:
 
 
 - cpid: 0x8003
@@ -176,21 +174,12 @@ modern_platforms:
   dram_base: 0x800000000
   demotion_reg: 0x2102bc000
 
-  heap_check_all: 0x0
-  heap_state: 0x0
-  heap_write_hash: 0x0
-
   sigcheck_addr: 0x10000812c
   sigcheck_patch: 0xd2800000
 
   usb:
+    <<: [*usb_payload_arm64, *usb_magic_64]
     load_address: 0x180380000
-    exec_magic: 0x6578656365786563
-    done_magic: 0x646F6E65646F6E65
-    memc_magic: 0x6D656D636D656D63
-    mems_magic: 0x6D656D736D656D73
-    payload_offset: 0x180
-    payload_size: 0x240
     usb_core_do_io: 0x10000EE78
 
   exploit_configs:
@@ -204,10 +193,12 @@ modern_platforms:
         payload_pointer: 0x1800878F8
       config:
         large_leak:
-        overwrite:
-        overwrite_offset:
         hole:
         leak:
+        overwrite:
+          preamble:
+          pack:
+          args:
 
 
 - cpid: 0x8004
@@ -227,21 +218,12 @@ modern_platforms:
   dram_base: 0x80000000
   demotion_reg: 0x481bc000
 
-  heap_check_all: 0x0
-  heap_state: 0x0
-  heap_write_hash: 0x0
-
   sigcheck_addr: 0x4452
   sigcheck_patch: 0x20
 
   usb:
+    <<: [*usb_payload_armv7, *usb_magic_32]
     load_address: 0x48818000
-    exec_magic: 0x65786563
-    done_magic: 0x646F6E65
-    memc_magic: 0x6D656D63
-    mems_magic: 0x6D656D73
-    payload_offset: 0x180
-    payloadsize: 0x140
     usb_core_do_io: 0x85A1
 
   exploit_configs:
@@ -254,9 +236,12 @@ modern_platforms:
         payload_destination: 0x48806E00
         payload_pointer: 0x48806384
       config:
-        overwrite:
         hole: 0x05
         leak: 0x01
+        overwrite:
+          preamble:
+          pack:
+          args:
 
 
 - cpid: 0x8010
@@ -276,10 +261,6 @@ modern_platforms:
   dram_base: 0x800000000
   demotion_reg: 0x2102bc000
 
-  heap_check_all: 0x0
-  heap_state: 0x0
-  heap_write_hash: 0x0
-
   sigcheck_addr: 0x1000074ac
   sigcheck_patch: 0xd2800000
 
@@ -295,13 +276,8 @@ modern_platforms:
     handle_interface_request: 0x10000DFB8
 
   usb:
+    <<: [*usb_payload_arm64, *usb_magic_64]
     load_address: 0x1800B0000
-    exec_magic: 0x6578656365786563
-    done_magic: 0x646F6E65646F6E65
-    memc_magic: 0x6D656D636D656D63
-    mems_magic: 0x6D656D736D656D73
-    payload_offset: 0x180
-    payload_size: 0x240
     usb_core_do_io: 0x10000DC98
 
   exploit_configs:
@@ -314,9 +290,12 @@ modern_platforms:
         payload_destination: 0x1800AFC00
         payload_pointer: 0x180088B48
       config:
-        overwrite:
         hole: 0x06
         leak: 0x01
+        overwrite:
+          preamble:
+          pack:
+          args:
 
 
 - cpid: 0x8011
@@ -336,10 +315,6 @@ modern_platforms:
   demotion_reg: 0x2102bc000
   dram_base: 0x800000000
 
-  heap_check_all: 0x0
-  heap_state: 0x0
-  heap_write_hash: 0x0
-
   sigcheck_addr: 0x100007630
   sigcheck_patch: 0xd2800000
 
@@ -353,13 +328,8 @@ modern_platforms:
     handle_interface_request: 0x10000E08C
 
   usb:
+    <<: [*usb_payload_arm64, *usb_magic_64]
     load_address: 0x1800B0000
-    exec_magic: 0x6578656365786563
-    done_magic: 0x646F6E65646F6E65
-    memc_magic: 0x6D656D636D656D63
-    mems_magic: 0x6D656D736D656D73
-    payload_offset: 0x180
-    payload_size: 0x240
     usb_core_do_io: 0x10000DD64
 
   exploit_configs:
@@ -372,9 +342,17 @@ modern_platforms:
         payload_destination: 0x1800AFC00
         payload_pointer: 0x180088A58
       config:
-        overwrite:
         hole: 0x06
         leak: 0x01
+        overwrite:
+          preamble: 0x500
+          pack: <32x2Q16x32x2QI
+          args:
+            - nop
+            - 0x1800B0800
+            - nop
+            - 0x1800B0800
+            - 0xBEEFBEEF
 
 
 - cpid: 0x8012
@@ -409,13 +387,8 @@ modern_platforms:
     handle_interface_request: 0x10000BFFC
 
   usb:
+    <<: [*usb_payload_arm64, *usb_magic_64]
     load_address: 0x18001C000
-    exec_magic: 0x6578656365786563
-    done_magic: 0x646F6E65646F6E65
-    memc_magic: 0x6D656D636D656D63
-    mems_magic: 0x6D656D736D656D73
-    payload_offset: 0x180
-    payload_size: 0x240
     usb_core_do_io: 0x10000BD20
 
   exploit_configs:
@@ -428,9 +401,12 @@ modern_platforms:
         payload_destination: 0x18001BC00
         payload_pointer: 0x180008B08
       config:
-        overwrite:
         hole: 0x06
         leak: 0x01
+        overwrite:
+          preamble:
+          pack:
+          args:
 
 
 - cpid: 0x8015
@@ -469,13 +445,8 @@ modern_platforms:
     handle_interface_request: 0x10000BCCC
 
   usb:
+    <<: [*usb_payload_arm64, *usb_magic_64]
     load_address: 0x18001C000
-    exec_magic: 0x6578656365786563
-    done_magic: 0x646F6E65646F6E65
-    memc_magic: 0x6D656D636D656D63
-    mems_magic: 0x6D656D736D656D73
-    payload_offset: 0x180
-    payload_size: 0x240
     usb_core_do_io: 0x10000B9A8
 
   exploit_configs:
@@ -488,9 +459,13 @@ modern_platforms:
         payload_destination: 0x18001BC00
         payload_pointer: 0x180008638
       config:
-        overwrite:
         hole: 0x06
         leak: 0x01
+        overwrite:
+          preamble:
+          pack:
+          args:
+
 
 - cpid: 0x8947
   cprv: 0x0
@@ -509,21 +484,12 @@ modern_platforms:
   dram_base: 0x80000000
   demotion_reg: 0x3f500000
 
-  heap_check_all: 0x0
-  heap_state: 0x0
-  heap_write_hash: 0x0
-
   sigcheck_addr: 0x451e
   sigcheck_patch: 0x20
 
   usb:
+    <<: [*usb_payload_armv7, *usb_magic_32]
     load_address: 0x34000000
-    exec_magic: 0x65786563
-    done_magic: 0x646F6E65
-    memc_magic: 0x6D656D63
-    mems_magic: 0x6D656D73
-    payload_offset: 0x180
-    payload_size: 0x140
     usb_core_do_io: 0x79ED
 
   exploit_configs:
@@ -538,6 +504,9 @@ modern_platforms:
       config:
         large_leak: 0x272
         overwrite:
+          preamble:
+          pack:
+          args:
 
 
 - cpid: 0x8950
@@ -565,13 +534,8 @@ modern_platforms:
   sigcheck_patch: 0x20
 
   usb:
+    <<: [*usb_payload_armv7, *usb_magic_32]
     load_address: 0x10000000
-    exec_magic: 0x65786563
-    done_magic: 0x646F6E65
-    memc_magic: 0x6D656D63
-    mems_magic: 0x6D656D73
-    payload_offset: 0x180
-    payload_size: 0x140
     usb_core_do_io: 0x7621
 
   exploit_configs:
@@ -606,21 +570,12 @@ modern_platforms:
   dram_base: 0x80000000
   demotion_reg: 0x3f500000
 
-  heap_check_all: 0x0
-  heap_state: 0x0
-  heap_write_hash: 0x0
-
   sigcheck_addr: 0x4d28
   sigcheck_patch: 0x20
 
   usb:
+    <<: [*usb_payload_armv7, *usb_magic_32]
     load_address: 0x10000000
-    exec_magic: 0x65786563
-    done_magic: 0x646F6E65
-    memc_magic: 0x6D656D63
-    mems_magic: 0x6D656D73
-    payload_offset: 0x180
-    payload_size: 0x140
     usb_core_do_io: 0x7661
 
   exploit_configs:
@@ -655,21 +610,12 @@ modern_platforms:
   dram_base: 0x800000000
   demotion_reg: 0x20e02a000
 
-  heap_check_all: 0x0
-  heap_state: 0x0
-  heap_write_hash: 0x0
-
   sigcheck_addr: 0x100005be8
   sigcheck_patch: 0xd2800000
 
   usb:
+    <<: [*usb_payload_arm64, *usb_magic_64]
     load_address: 0x180380000
-    exec_magic: 0x6578656365786563
-    done_magic: 0x646F6E65646F6E65
-    memc_magic: 0x6D656D636D656D63
-    mems_magic: 0x6D656D736D656D73
-    payload_offset: 0x180
-    payload_size: 0x240
     usb_core_do_io: 0x10000CC78
 
   exploit_configs:
@@ -684,7 +630,6 @@ modern_platforms:
       config:
         large_leak: 0x1F00
         overwrite:
-        overwrite_offset: 0
 
 
 legacy_platforms:
