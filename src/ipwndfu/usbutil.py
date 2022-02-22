@@ -90,25 +90,88 @@ def libusb1_no_error_ctrl_transfer(
         )
 
 
+TRANSFER_DEVICE_TO_HOST = 0x80
+TRANSFER_ENDPOINT_FROM_HOST = 0x02
+REQUEST_SET_FEATURE = 0x03
+REQUEST_GET_DESCRIPTOR = 0x06
+ENDPOINT_FEATURE_HALT = 0x00
+TIMEOUT_TINY = 0.00001
+TIMEOUT_STANDARD = 1
+TIMEOUT_LONG = 10
+LANG_ID_ENGLISH = 0x0409
+LANG_ID_SPANISH = 0x040A
+DESCRIPTOR_TYPE_STRING = 0x03
+STRING_INDEX_SERIAL = 0x04
+SERIAL_STRING_DESCRIPTOR = (DESCRIPTOR_TYPE_STRING << 8) | STRING_INDEX_SERIAL
+
+
 def stall(device: "Device") -> None:
-    libusb1_async_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, b"A" * 0xC0, 0.00001)
+    libusb1_async_ctrl_transfer(
+        device,
+        TRANSFER_DEVICE_TO_HOST,
+        REQUEST_GET_DESCRIPTOR,
+        SERIAL_STRING_DESCRIPTOR,
+        LANG_ID_SPANISH,
+        b"A" * 0xC0,
+        TIMEOUT_TINY,
+    )
 
 
 def usb_req_stall(device: "Device") -> None:
-    libusb1_no_error_ctrl_transfer(device, 0x2, 3, 0x0, 0x80, 0x0, 10)
+    libusb1_no_error_ctrl_transfer(
+        device,
+        TRANSFER_ENDPOINT_FROM_HOST,
+        REQUEST_SET_FEATURE,
+        ENDPOINT_FEATURE_HALT,
+        TRANSFER_DEVICE_TO_HOST,
+        0x0,
+        TIMEOUT_LONG,
+    )
 
 
 def usb_req_leak(device: "Device") -> None:
-    libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0x40, 1)
+    libusb1_no_error_ctrl_transfer(
+        device,
+        TRANSFER_DEVICE_TO_HOST,
+        REQUEST_GET_DESCRIPTOR,
+        SERIAL_STRING_DESCRIPTOR,
+        LANG_ID_SPANISH,
+        0x40,
+        TIMEOUT_STANDARD,
+    )
 
 
 def leak(device: "Device"):
-    libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0xC0, 1)
+    libusb1_no_error_ctrl_transfer(
+        device,
+        TRANSFER_DEVICE_TO_HOST,
+        REQUEST_GET_DESCRIPTOR,
+        SERIAL_STRING_DESCRIPTOR,
+        LANG_ID_SPANISH,
+        0xC0,
+        TIMEOUT_STANDARD,
+    )
 
 
 def no_leak(device: "Device") -> None:
-    libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0xC1, 1)
+    libusb1_no_error_ctrl_transfer(
+        device,
+        TRANSFER_DEVICE_TO_HOST,
+        REQUEST_GET_DESCRIPTOR,
+        SERIAL_STRING_DESCRIPTOR,
+        LANG_ID_SPANISH,
+        0xC1,
+        TIMEOUT_STANDARD,
+    )
 
 
 def usb_req_no_leak(device: "Device"):
-    libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0x41, 1)
+    libusb1_no_error_ctrl_transfer(
+        device,
+        TRANSFER_DEVICE_TO_HOST,
+        REQUEST_GET_DESCRIPTOR,
+        0x304,
+        LANG_ID_SPANISH,
+        0x41,
+        TIMEOUT_STANDARD,
+    )
