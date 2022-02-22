@@ -90,22 +90,25 @@ def libusb1_no_error_ctrl_transfer(
         )
 
 
-def stall(device: "Device", no_error: bool = False) -> None:
-    if no_error:
-        libusb1_no_error_ctrl_transfer(device, 0x2, 3, 0x0, 0x80, 0x0, 10)
-    else:
-        libusb1_async_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, b"A" * 0xC0, 0.00001)
+def stall(device: "Device") -> None:
+    libusb1_async_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, b"A" * 0xC0, 0.00001)
 
 
-def leak(device: "Device", no_error: bool = False):
-    if no_error:
-        libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0x40, 1)
-    else:
-        libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0xC0, 1)
+def usb_req_stall(device: "Device") -> None:
+    libusb1_no_error_ctrl_transfer(device, 0x2, 3, 0x0, 0x80, 0x0, 10)
 
 
-def no_leak(device: "Device", no_error: bool = False) -> None:
-    if no_error:
-        libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0x41, 1)
-    else:
-        libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0xC1, 1)
+def usb_req_leak(device: "Device") -> None:
+    libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0x40, 1)
+
+
+def leak(device: "Device"):
+    libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0xC0, 1)
+
+
+def no_leak(device: "Device") -> None:
+    libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0xC1, 1)
+
+
+def usb_req_no_leak(device: "Device"):
+    libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0x41, 1)
