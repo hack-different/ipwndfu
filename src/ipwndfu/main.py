@@ -200,7 +200,7 @@ def pwn(device=None, match_device=None):
         "8960",
     ]:
         checkm8.exploit(match=match_device)
-    elif serial.cpid in ["7000", "8000", "8003"]:
+    elif serial.cpid in ["7000", "7001", "8000", "8003"]:
         checkm8.exploit_a8_a9(match=match_device)
     else:
         print("Found: " + serial_number, file=stderr)
