@@ -131,8 +131,8 @@ modern_platforms:
 
   <<: *dfu_load_t800x
 
-  sigcheck_addr: 0x0
-  sigcheck_patch: 0x0
+  sigcheck_addr: 0x10000AD04
+  sigcheck_patch: 0xd2800000
 
   usb:
     <<: *usb_magic_64
