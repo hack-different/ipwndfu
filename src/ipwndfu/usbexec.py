@@ -134,10 +134,10 @@ configs = [
     ),
 ]
 
-EXEC_MAGIC = b"execexec"[::-1]
-DONE_MAGIC = b"donedone"[::-1]
-MEMC_MAGIC = b"memcmemc"[::-1]
-MEMS_MAGIC = b"memsmems"[::-1]
+EXEC_MAGIC = utilities.magic_to_cigam(b"execexec")
+DONE_MAGIC = utilities.magic_to_cigam(b"donedone")
+MEMC_MAGIC = utilities.magic_to_cigam(b"memcmemc")
+MEMS_MAGIC = utilities.magic_to_cigam(b"memsmems")
 if platform.system() == "Linux":
     USB_READ_LIMIT = 0xFFF
 else:
