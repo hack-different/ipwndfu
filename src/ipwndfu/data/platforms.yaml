@@ -152,13 +152,7 @@ modern_platforms:
       large_leak: 0x800
       hole:
       leak:
-      overwrite: &overwrite_t7000
-        preamble: 0x560
-        pack: "<32xQQ"
-        args:
-          - 0x180380000
-          - 0x000000000
-
+      overwrite: *overwrite_t7000
 
 - cpid: 0x8000
   cprv: 0x20
