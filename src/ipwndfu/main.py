@@ -256,7 +256,7 @@ def xploit():
     device.flash_nor(new_nor.dump())
 
 
-def send_file(device=None, filename=""):
+def send_file(device: usb.Device, filename: str):
     try:
         with open(filename, "rb") as f:
             data = f.read()
