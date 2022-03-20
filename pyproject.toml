@@ -46,6 +46,7 @@ pep8-naming = "^0"
 types-cryptography = "^3"
 MonkeyType = "^21"
 types-PyYAML = "^6"
+setuptools = "^58"
 unicorn = { path = "ext/unicorn/bindings/python" }
 
 [build-system]
