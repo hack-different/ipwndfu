@@ -74,7 +74,7 @@ not_memc:
   BNE  request_done
 
   STR  XZR, [X20]
-  
+
   LDP  X0, X1, [X20, #0x10]
   LDR  X2, [X20, #0x20]
   BL   memset
@@ -136,7 +136,7 @@ memset_1:
 
 memset_done:
   MOV  X0, X3
-  RET 
+  RET
 
 memcpy:
   MOV  X4, X0
@@ -165,7 +165,7 @@ memcpy_4:
 memcpy_2:
   CMP  X2, #2
   B.CC memcpy_1
-  
+
   LDRH W3, [X1]
   STRH W3, [X0]
   ADD  X0, X0, #2

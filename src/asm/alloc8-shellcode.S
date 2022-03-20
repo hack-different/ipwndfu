@@ -6,7 +6,7 @@
 @ * enters pwned DFU on boot if home and power buttons are being held and cable is connected
 
 .text
- 
+
 .pool
 .set free,                              0xBAD00004
 .set get_nor_image,                     0xBAD0000a
@@ -92,13 +92,13 @@ pwned_boot:
     CBNZ R0, pwned_dfu                          @ if (R0 != 0) goto pwned_dfu
 
 pwned_llb_boot:
-    LDR R0, =ILLB_MAGIC                 
-    LDR R3, =get_nor_image              
+    LDR R0, =ILLB_MAGIC
+    LDR R3, =get_nor_image
     BLX R3                                      @ R0 = get_nor_image(ILLB_MAGIC)
 
     CBZ R0, pwned_dfu                           @ if (R0 == 0) goto pwned_dfu
 
-    LDR R1, =LOAD_ADDRESS                       
+    LDR R1, =LOAD_ADDRESS
     STR R1, [SP]                                @ SP[0] = LOAD_ADDRESS
 
     LDR R1, =MAX_SIZE
@@ -110,7 +110,7 @@ pwned_llb_boot:
 
     CBNZ R0, pwned_dfu                          @ if (R0 != 0) goto pwned_dfu
 
-    LDR R1, =LOAD_ADDRESS                       
+    LDR R1, =LOAD_ADDRESS
     MOV R2, #0
     LDR R3, =jump_to
     BLX R3                                      @ jump_to(0, LOAD_ADDRESS, 0)
@@ -131,7 +131,7 @@ pwned_dfu_loop:
     LDR R0, =LOAD_ADDRESS
     LDR R1, =MAX_SIZE
     LDR R3, =usb_wait_for_image
-    BLX R3 
+    BLX R3
     MOV R4, R0                                  @ R4 = usb_wait_for_image(LOAD_ADDRESS, MAX_SIZE)
 
     LDR R5, =gLeakingDFUBuffer
@@ -160,7 +160,7 @@ pwned_dfu_loop:
     MOV R4, R0                                  @ R4 = memz_create(LOAD_ADDRESS, R4, 0)
 
     CBZ R4, pwned_dfu_loop_end                  @ if (R4 == 0) goto pwned_dfu_loop_end
-                         
+
     STR R5, [SP]                                @ SP[0] = LOAD_ADDRESS
 
     STR R4, [SP, #4]                            @ SP[1] = R4
@@ -203,8 +203,8 @@ pwned_dfu_exec_magic:
 
     LDR R4, [R5, #0x20]
     STR R4, [SP, #0x8]                          @ SP[2] = LOAD_ADDRESS[8]   /* arg7 */
-    
-    LDR R4, [R5, #0x4]                          
+
+    LDR R4, [R5, #0x4]
     BLX R4                                      @ R0 = LOAD_ADDRESS[1](R0, R1, R2, R3, SP[0], SP[1], SP[2])
 
     STR R0, [R5, #4]                            @ LOAD_ADDRESS[1] = R0
@@ -252,7 +252,7 @@ image3_load_no_signature_check:
     LDR R4, [R5, #0x14]
     LDR R0, [R4, #8]
     LDR R1, =LOAD_ADDRESS
-    LDR R2, [R4, #0xC]        
+    LDR R2, [R4, #0xC]
     MOVS R3, #0
     LDR R4, [R0, #0x1C]
     BLX R4

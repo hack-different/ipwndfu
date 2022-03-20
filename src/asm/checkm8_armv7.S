@@ -91,7 +91,7 @@ copy_loop:
   BCC  copy_loop
 
   MOV  R0, #0
-  MCR  p15, 0, R0, c7, c5, 0 
+  MCR  p15, 0, R0, c7, c5, 0
   DSB
   ISB
 

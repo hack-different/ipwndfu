@@ -5,7 +5,7 @@
 @ * reports PWND:[limera1n] in USB serial number string
 
 .text
- 
+
 .pool
 .set free,                          0xBAD0000d
 .set memz_create,                   0xBAD0000f
@@ -41,9 +41,9 @@ _start:
     NOP
     NOP
     NOP
-    NOP                                         
-    NOP                                         
-    NOP                                         
+    NOP
+    NOP
+    NOP
     NOP
     NOP
     NOP
@@ -127,8 +127,8 @@ pwned_dfu_loop:
 
     LDR R4, [R5, #0x20]
     STR R4, [SP, #0x8]                          @ SP[2] = LOAD_ADDRESS[8]   /* arg7 */
-    
-    LDR R4, [R5, #0x4]                          
+
+    LDR R4, [R5, #0x4]
     BLX R4                                      @ R0 = LOAD_ADDRESS[1](R0, R1, R2, R3, SP[0], SP[1], SP[2])
 
     STR R0, [R5, #4]                            @ LOAD_ADDRESS[1] = R0
@@ -148,7 +148,7 @@ pwned_dfu_not_exec_magic:
     CMP R0, #0
     BEQ pwned_dfu_loop                          @ if (R0 == 0) goto pwned_dfu_loop /* out of memory :-| */
 
-    LDR R3, =LOAD_ADDRESS                       
+    LDR R3, =LOAD_ADDRESS
     STR R3, [SP]                                @ SP[0] = LOAD_ADDRESS
 
     STR R4, [SP, #4]                            @ SP[1] = R4
