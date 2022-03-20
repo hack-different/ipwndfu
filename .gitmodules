@@ -1,3 +1,6 @@
 [submodule "external/unicorn"]
 	path = ext/unicorn
 	url = https://github.com/unicorn-engine/unicorn.git
+[submodule "ext/roms"]
+	path = ext/roms
+	url = https://github.com/hekapooios/hekapooios.github.io.git
