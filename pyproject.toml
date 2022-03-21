@@ -46,9 +46,8 @@ pep8-naming = "^0"
 types-cryptography = "^3"
 MonkeyType = "^21"
 types-PyYAML = "^6"
-setuptools = "^58"
 unicorn = { path = "ext/unicorn/bindings/python" }
 
 [build-system]
-requires = ["poetry-core>=1.1.0"]
+requires = ["poetry-core>=1.1.0", "setuptools"]
 build-backend = "poetry.core.masonry.api"
