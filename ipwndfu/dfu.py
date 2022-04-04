@@ -5,9 +5,10 @@ import time
 from contextlib import suppress
 from typing import TYPE_CHECKING, Optional
 
-import libusbfinder
 import usb  # type: ignore
 import usb.backend.libusb1  # type: ignore
+
+import libusbfinder
 
 if TYPE_CHECKING:
     from usb.core import Device  # type: ignore

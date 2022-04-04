@@ -9,6 +9,7 @@ import sys
 import time
 
 import usb  # type: ignore
+
 from ipwndfu import dfu
 
 # Must be global so garbage collector never frees it

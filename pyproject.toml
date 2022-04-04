@@ -5,8 +5,8 @@ description = "The DFU exploitation toolkit for Apple devices"
 readme = "README.md"
 
 packages = [
-    { include = "ipwndfu", from="src" },
-    { include = "libusbfinder", from="src" }
+    { include = "ipwndfu" },
+    { include = "libusbfinder" },
 ]
 
 authors = ["axi0mX <axi0mXor@gmail.com>"]

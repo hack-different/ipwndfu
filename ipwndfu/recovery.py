@@ -1,9 +1,10 @@
 import sys
 import time
 
-import libusbfinder
 import usb  # type: ignore
 import usb.backend.libusb1  # type: ignore
+
+import libusbfinder
 
 MAX_PACKET_SIZE = 0x4000
 

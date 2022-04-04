@@ -79,7 +79,7 @@ repos:
     rev: 4.0.1
     hooks:
       - id: flake8
-        exclude: ^(tests/|src/libusbfinder)
+        exclude: ^(tests/|libusbfinder)
         additional_dependencies: *flake8_deps
 
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -87,7 +87,7 @@ repos:
     hooks:
       - id: mypy
         pass_filenames: false
-        args: ['src/']
+        args: ['ipwndfu/', 'libusbfinder/']
         additional_dependencies:
           - types-requests
           - types-cryptography

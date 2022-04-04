@@ -6,6 +6,7 @@ import sys
 from contextlib import suppress
 
 import usb  # type: ignore
+
 from ipwndfu import recovery
 
 
