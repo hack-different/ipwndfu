@@ -108,7 +108,7 @@ checkra1n team, littlelailo for the idea of just removing the call to image4_loa
 
 linushenze for ipwndfu patches
 
-hack-differrent team, for actively maintaining & updating ipwndfu
+hack-different team, for actively maintaining & updating ipwndfu
 
 dora2-iOS for s8001 (A9X) support
 
