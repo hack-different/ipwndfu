@@ -120,7 +120,7 @@ def test_boot_securerom():
             )
         else:
             print(
-                ">>> UNKNOWN ACCESS [0x%x] (from hook_mem_invalid) at 0x%x, data size = %u, data value = 0x%x"
+                ">>> UNKNOWN ACCESS [0x%x] (from hook_mem_invalid) at 0x%016x, data size = %u, data value = 0x%x"
                 % (access, address, size, value)
             )
 
