@@ -27,7 +27,7 @@ ipwndfu = "ipwndfu.main:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-cryptography = "^37"
+cryptography = ">=37,<40"
 pyusb = "^1.2.1"
 
 [tool.poetry.dev-dependencies]
